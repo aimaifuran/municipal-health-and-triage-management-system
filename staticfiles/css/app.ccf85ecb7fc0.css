@@ -1,0 +1,39 @@
+.form-input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #14b8a6;
+  border-color: #14b8a6;
+}
+
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+.htmx-request .htmx-indicator {
+  display: inline-block;
+}
+
+.htmx-indicator {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
