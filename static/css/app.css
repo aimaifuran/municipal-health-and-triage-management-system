@@ -11,6 +11,30 @@
   border-color: #14b8a6;
 }
 
+.form-input-error {
+  border-color: #dc2626;
+}
+
+.form-input-error:focus {
+  box-shadow: 0 0 0 2px #fca5a5;
+  border-color: #dc2626;
+}
+
+.form-field-error {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  color: #dc2626;
+}
+
+.login-credentials-error {
+  margin-bottom: 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #dc2626;
+}
+
 .login-email-input {
   min-width: 0;
   overflow: visible;

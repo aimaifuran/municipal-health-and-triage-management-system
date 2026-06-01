@@ -32,11 +32,6 @@ class UserLoginView(LoginView):
         response["Pragma"] = "no-cache"
         return response
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = LoginForm()
-        return context
-
     def form_valid(self, form):
         user = form.get_user()
         ip = self.request.META.get("REMOTE_ADDR")
@@ -51,21 +46,7 @@ class UserLoginView(LoginView):
         email = self.request.POST.get("username", "")
         if email:
             AuditService.log_login_attempt(email, False, self.request)
-
-        if form.non_field_errors():
-            for error in form.non_field_errors():
-                messages.error(self.request, error)
-        else:
-            for field in form.visible_fields():
-                for error in field.errors:
-                    messages.error(self.request, error)
-            if not any(form.errors):
-                messages.error(
-                    self.request,
-                    "Invalid email or password. Please check your credentials and try again.",
-                )
-
-        return redirect("accounts:login")
+        return self.render_to_response(self.get_context_data(form=form))
 
     def get_success_url(self):
         return reverse_lazy("dashboard:home")

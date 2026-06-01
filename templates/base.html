@@ -84,7 +84,7 @@
   {% else %}
       <main id="main-content" class="min-h-full">
   {% endif %}
-        {% include "partials/messages.html" %}
+        {% block page_messages %}{% include "partials/messages.html" %}{% endblock %}
         {% block content %}{% endblock %}
       </main>
   {% if user.is_authenticated %}

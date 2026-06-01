@@ -94,30 +94,34 @@ class LoginForm(HoneypotMixin, AuthenticationForm):
     """Email-based login; relies on AuthenticationForm.authenticate(request=...)."""
 
     error_messages = {
-        "invalid_login": "Invalid email or password. Please check your credentials and try again.",
+        "invalid_login": "Invalid credentials",
         "inactive": "This account has been deactivated.",
     }
 
     username = forms.EmailField(
         label="Email",
+        error_messages={
+            "required": "Email is required.",
+            "invalid": "Enter a valid email address.",
+        },
         widget=forms.EmailInput(
             attrs={
-                "class": "form-input",
+                "class": "form-input login-email-input",
                 "placeholder": "doctor@mhtms.gov.ph",
                 "autocomplete": "username",
-                "required": True,
                 "spellcheck": "false",
                 "inputmode": "email",
             }
         ),
     )
     password = forms.CharField(
+        label="Password",
+        error_messages={"required": "Password is required."},
         widget=forms.PasswordInput(
             attrs={
                 "class": "form-input",
                 "placeholder": "••••••••",
                 "autocomplete": "current-password",
-                "required": True,
             }
         ),
     )
