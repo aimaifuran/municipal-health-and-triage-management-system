@@ -106,8 +106,9 @@ Set these **before** the first successful deploy (or immediately after if the de
 1. **mhtms-web** → **Manual Deploy** → **Deploy latest commit** (if not already deploying)
 2. Open **Logs** and watch the build:
    - `pip install -r requirements/prod.txt`
+   - `migrate`
+   - `seed_demo --reset` (demo users and sample patients)
    - `collectstatic`
-   - `migrate` (pre-deploy)
    - Gunicorn starts
 
 ### Step 4: Verify the site
@@ -115,7 +116,7 @@ Set these **before** the first successful deploy (or immediately after if the de
 1. Open `https://YOUR-SERVICE.onrender.com/health/`  
    Expected: `{"status": "ok"}`
 2. Open `https://YOUR-SERVICE.onrender.com/accounts/login/`
-3. Log in after seeding data (Part C below)
+3. Log in with demo credentials (Part C)
 
 ### Step 5: Custom domain (optional)
 
@@ -158,7 +159,7 @@ Use this if you prefer creating services one by one.
 | Region | Singapore |
 | Branch | `main` |
 | Runtime | **Python 3** |
-| Build Command | `./build.sh` (installs deps, runs migrations, collectstatic) |
+| Build Command | `./build.sh` (installs deps, migrate, `seed_demo --reset`, collectstatic) |
 | Start Command | `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120` |
 
 > **Free tier:** `preDeployCommand` is not supported. Migrations run inside `build.sh` instead.
@@ -180,42 +181,31 @@ Use this if you prefer creating services one by one.
 
 ---
 
-## Part C — Load demo data (required for login)
+## Part C — Demo data and login
 
-**Migrations only create empty tables.** They do **not** create `admin@mhtms.gov.ph` or other demo users.
+**Every deploy** runs `python manage.py seed_demo --reset` inside `build.sh` (free tier has no Shell).
 
-If login says *"Invalid email or password"*, the database is migrated but **not seeded** — run the command below.
+- Creates or updates demo users (`admin@mhtms.gov.ph`, etc.) and resets their password to `DemoPass123!`
+- `--reset` removes sample patients (`PAT-SAMPLE-*`, `PAT-DEMO-001`) and related triage/consultations before re-seeding, so redeploys do not duplicate queue rows
 
-Render does not run `seed_demo` automatically. After the first successful deploy:
+Check build logs for `=== Sample data ready ===` and `Created user admin@mhtms.gov.ph`.
 
-### Option 1: Render Shell (dashboard) — do this first
+### Manual re-seed (optional)
 
-1. Open Blueprint **mhtms** → service **mhtms-web**
-2. Confirm deploy status is **Live** (not Building/Failed)
-3. Click **Shell** (top right)
-4. Run:
+If you need to refresh data without a full deploy:
 
-```bash
-python manage.py seed_demo
-```
-
-You should see lines like `Created user admin@mhtms.gov.ph` and `=== Sample data ready ===`.
-
-5. Try login again at `/accounts/login/`
-
-**If Shell is not available on your plan**, use Option 2 below.
-
-### Option 2: One-off job (if Shell unavailable on your plan)
-
-Locally, with `DATABASE_URL` pointing to Render Postgres (use **External** URL only for one-time admin tasks, then revoke):
+- **Paid plans (Shell):** `python manage.py seed_demo --reset` on **mhtms-web**
+- **From your PC** (External `DATABASE_URL`, one-time only):
 
 ```powershell
 $env:DATABASE_URL="postgresql://..."
 $env:DJANGO_SETTINGS_MODULE="config.settings.production"
-python manage.py seed_demo
+python manage.py seed_demo --reset
 ```
 
-### Demo logins (after seed)
+> **Production go-live:** Remove or comment out the `seed_demo` line in `build.sh` before real patient data is stored, or demo passwords and sample patients will be reset on every deploy.
+
+### Demo logins
 
 | Email | Password | Role |
 |-------|----------|------|
@@ -272,13 +262,10 @@ python manage.py createsuperuser
 
 ### Login always fails ("Invalid email or password")
 
-1. Run `python manage.py seed_demo` in **mhtms-web** → **Shell** (see Part C)
-2. Or create an admin manually: `python manage.py createsuperuser`
-3. If you tried many times, unlock axes in Shell:
-
-```bash
-python manage.py unlock_login --all
-```
+1. Open the latest **build** logs and confirm `seed_demo --reset` finished without errors
+2. Redeploy **mhtms-web** → **Manual Deploy** → **Deploy latest commit**
+3. If build seeding is disabled, run `python manage.py seed_demo --reset` via Shell or locally (Part C)
+4. Too many failed attempts: run `python manage.py unlock_login --all` (Shell or local with `DATABASE_URL`)
 
 ### `DisallowedHost` in browser
 
@@ -346,7 +333,7 @@ Upgrade plans when you need always-on uptime, more RAM, or production SLAs.
 
 1. Push commits to `main` on GitHub
 2. Render **auto-deploys** if enabled (**Settings** → **Auto-Deploy**)
-3. Each deploy runs `build.sh`, `migrate`, then restarts Gunicorn
+3. Each deploy runs `build.sh` (`migrate`, `seed_demo --reset`, `collectstatic`), then restarts Gunicorn
 
 ---
 
@@ -355,7 +342,7 @@ Upgrade plans when you need always-on uptime, more RAM, or production SLAs.
 | File | Purpose |
 |------|---------|
 | `render.yaml` | Blueprint: web + Postgres + Redis |
-| `build.sh` | Install deps + `collectstatic` |
+| `build.sh` | Install deps + `migrate` + `seed_demo --reset` + `collectstatic` |
 | `Procfile` | Gunicorn/Celery commands (reference) |
 | `runtime.txt` | Python 3.13.0 |
 | `requirements/prod.txt` | Production dependencies |

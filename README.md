@@ -134,7 +134,7 @@ Quick overview:
 1. Push this repository to GitHub
 2. Render Dashboard → **New** → **Blueprint** → select the repo (`render.yaml`)
 3. Set `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and Cloudinary credentials on `mhtms-web`
-4. After deploy: `python manage.py seed_demo` in Render Shell (optional demo data)
+4. Each Render deploy runs `seed_demo --reset` in `build.sh` (demo login: `admin@mhtms.gov.ph` / `DemoPass123!`)
 
 `DEBUG` is **always False** in production settings.
 
