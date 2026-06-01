@@ -25,19 +25,27 @@
     },
   ];
 
+  function setVisible(el, visible) {
+    if (!el) return;
+    el.classList.toggle("hidden", !visible);
+    if (el === loadingEl) {
+      el.classList.toggle("inline-flex", visible);
+    }
+  }
+
   function setLoading(on) {
     if (!submitBtn || !labelEl || !loadingEl) return;
     submitBtn.disabled = on;
-    labelEl.hidden = on;
-    loadingEl.hidden = !on;
-    if (statusEl) statusEl.hidden = !on;
+    setVisible(labelEl, !on);
+    setVisible(loadingEl, on);
+    setVisible(statusEl, on);
   }
 
   function clearClientError(field) {
     field.input?.classList.remove("form-input-error");
     if (field.clientError) {
       field.clientError.textContent = "";
-      field.clientError.hidden = true;
+      field.clientError.classList.add("hidden");
     }
   }
 
@@ -45,7 +53,7 @@
     field.input?.classList.add("form-input-error");
     if (field.clientError) {
       field.clientError.textContent = message;
-      field.clientError.hidden = false;
+      field.clientError.classList.remove("hidden");
     }
   }
 

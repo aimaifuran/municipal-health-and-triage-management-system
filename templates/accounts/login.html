@@ -43,7 +43,7 @@
         {% if form.username.errors %}
         <p id="username-error-server" class="form-field-error" role="alert">{{ form.username.errors.0 }}</p>
         {% endif %}
-        <p id="username-error-client" class="form-field-error" role="alert" hidden></p>
+        <p id="username-error-client" class="form-field-error hidden" role="alert"></p>
       </div>
 
       <div>
@@ -61,7 +61,7 @@
         {% if form.password.errors %}
         <p id="password-error-server" class="form-field-error" role="alert">{{ form.password.errors.0 }}</p>
         {% endif %}
-        <p id="password-error-client" class="form-field-error" role="alert" hidden></p>
+        <p id="password-error-client" class="form-field-error hidden" role="alert"></p>
       </div>
 
       <div class="hp-field" aria-hidden="true">
@@ -75,12 +75,12 @@
         class="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2 min-h-[44px]"
       >
         <span id="login-btn-label">Sign In</span>
-        <span id="login-btn-loading" class="inline-flex items-center gap-2" hidden>
+        <span id="login-btn-loading" class="hidden items-center gap-2">
           {% include "partials/loading_spinner.html" %}
           <span>Signing in…</span>
         </span>
       </button>
-      <p id="login-status" class="text-center text-xs text-slate-500" role="status" aria-live="polite" hidden>
+      <p id="login-status" class="hidden text-center text-xs text-slate-500" role="status" aria-live="polite">
         Verifying your credentials, please wait…
       </p>
     </form>
