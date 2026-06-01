@@ -1,0 +1,15 @@
+<div id="doctor-consultation-modal" hx-swap-oob="true"></div>
+
+<div id="doctor-consult-feedback" hx-swap-oob="innerHTML">
+  <div class="notify-alert mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800" role="status">
+    {{ message }}
+  </div>
+</div>
+
+<div id="queue-container" hx-swap-oob="innerHTML">
+  {% include "dashboard/partials/queue_panel.html" with queue_page=queue_page can_edit_triage=can_edit_triage show_doctor_consult_actions=show_doctor_consult_actions severity_before_actions=True queue_partial_url=queue_partial_url page_param=page_param filter_form_id=filter_form_id queue_hx_target=queue_hx_target %}
+</div>
+
+<div id="bulk-discharge-panel" hx-swap-oob="outerHTML">
+  {% include "dashboard/partials/bulk_discharge_panel.html" %}
+</div>

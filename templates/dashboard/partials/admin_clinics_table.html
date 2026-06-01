@@ -1,0 +1,42 @@
+{% if filter_oob %}
+{% include "dashboard/partials/table_filters.html" with table_filters=table_filters filter_form_id=filter_form_id show_severity_filter=False search_label="Search clinics" search_placeholder="Name, municipality, region…" hx_post_url=clinics_partial_url hx_target="#clinics-table-container" reset_page_param="page" hx_swap_oob=True severity_choices=severity_choices %}
+{% endif %}
+<div class="overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-50">
+      <tr>
+        <th class="px-4 py-2 text-left">Name</th>
+        <th class="px-4 py-2 text-left">Municipality</th>
+        <th class="px-4 py-2 text-left">Region</th>
+        <th class="px-4 py-2 text-left">Staff</th>
+        <th class="px-4 py-2 text-left">Status</th>
+        <th class="px-4 py-2 text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for clinic in clinics %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-2 font-medium">{{ clinic.name }}</td>
+        <td class="px-4 py-2">{{ clinic.municipality }}</td>
+        <td class="px-4 py-2">{{ clinic.region }}</td>
+        <td class="px-4 py-2">{{ clinic.staff_count }}</td>
+        <td class="px-4 py-2">
+          {% if clinic.is_active %}
+          <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">Active</span>
+          {% else %}
+          <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-2 text-right">
+          <a href="{% url 'dashboard:admin-clinics' %}?edit_clinic={{ clinic.pk }}" class="text-teal-700 hover:underline text-sm">Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No clinics match your search.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "dashboard/partials/pagination.html" with page_obj=clinics_page page_param=page_param pagination_post_url=clinics_partial_url filter_form_id=filter_form_id hx_target="#clinics-table-container" edit_clinic=edit_clinic %}

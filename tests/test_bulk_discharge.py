@@ -1,0 +1,27 @@
+import pytest
+
+from consultations.models import Consultation
+from consultations.services import ConsultationService
+
+
+@pytest.mark.django_db
+class TestBulkDischarge:
+    def test_bulk_discharge_success(self, doctor, assigned_patient):
+        c1 = Consultation.objects.create(
+            patient=assigned_patient,
+            doctor=doctor,
+            diagnosis="Flu",
+            treatment="Rest",
+            admitted=True,
+        )
+        results = ConsultationService.bulk_discharge([c1.id], doctor)
+        assert len(results["success"]) == 1
+        c1.refresh_from_db()
+        assert c1.discharged is True
+
+    def test_bulk_discharge_partial_failure(self, doctor, assigned_patient):
+        import uuid
+
+        fake_id = uuid.uuid4()
+        results = ConsultationService.bulk_discharge([fake_id], doctor)
+        assert len(results["failed"]) == 1

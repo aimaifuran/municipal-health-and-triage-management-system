@@ -1,0 +1,15 @@
+<div id="patient-register-panel">
+  <div class="notify-alert mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800" role="status">
+    <strong>{{ new_patient.patient_number }}</strong> registered — {{ new_patient.full_name }}.
+    Enter vitals below to add them to the triage queue.
+  </div>
+  {% include "dashboard/partials/patient_register_form.html" with form=patient_register_form %}
+</div>
+
+<div id="nurse-patient-select" hx-swap-oob="true">
+  {% include "dashboard/partials/nurse_patient_select.html" %}
+</div>
+
+<div id="triage-workspace" hx-swap-oob="true">
+  {% include "dashboard/partials/triage_form.html" with form=triage_form patient=new_patient triage_record=None %}
+</div>

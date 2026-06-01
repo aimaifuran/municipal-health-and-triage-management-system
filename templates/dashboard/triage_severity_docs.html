@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Triage Severity Documentation — {{ APP_NAME }}{% endblock %}
+{% block page_title %}Triage Severity Evaluation{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white rounded-xl border shadow-sm p-6 md:p-8 prose prose-slate prose-headings:text-teal-900 max-w-none">
+  <p class="text-sm text-slate-600 not-prose mb-6">
+    Reference for nurses and doctors. Severity is <strong>automatic</strong> — there is no manual Critical/Stable selector.
+    Source: <code class="text-xs">docs/TRIAGE_SEVERITY_EVALUATION.md</code>
+  </p>
+
+  <h2>1. Overview</h2>
+  <div class="not-prose overflow-x-auto mb-8">
+    <table class="min-w-full text-sm border border-slate-200">
+      <thead class="bg-slate-50"><tr><th class="px-4 py-2 text-left border-b">Step</th><th class="px-4 py-2 text-left border-b">Action</th></tr></thead>
+      <tbody>
+        <tr class="border-b"><td class="px-4 py-2">1</td><td class="px-4 py-2">Nurse submits vitals + symptoms</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">2</td><td class="px-4 py-2">System runs clinical triage engine</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">3</td><td class="px-4 py-2">Assigns tier (RED / ORANGE / YELLOW / GREEN)</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">4</td><td class="px-4 py-2">Maps to <strong>Critical</strong>, <strong>Moderate</strong>, or <strong>Stable</strong> + priority score</td></tr>
+        <tr><td class="px-4 py-2">5</td><td class="px-4 py-2">Queue ordered by priority; critical → Escalated</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>2. Severity levels (in the app)</h2>
+  <div class="not-prose overflow-x-auto mb-8">
+    <table class="min-w-full text-sm border border-slate-200">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-4 py-2 text-left border-b">Severity</th>
+          <th class="px-4 py-2 text-left border-b">Triage tier</th>
+          <th class="px-4 py-2 text-left border-b">Meaning</th>
+          <th class="px-4 py-2 text-left border-b">Queue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b bg-red-50"><td class="px-4 py-2 font-semibold text-red-800">Critical</td><td class="px-4 py-2">RED</td><td class="px-4 py-2">Life-threatening</td><td class="px-4 py-2">Escalated</td></tr>
+        <tr class="border-b bg-yellow-50"><td class="px-4 py-2 font-semibold text-yellow-800">Moderate</td><td class="px-4 py-2">ORANGE / YELLOW</td><td class="px-4 py-2">Urgent or needs assessment</td><td class="px-4 py-2">Waiting (by score)</td></tr>
+        <tr class="bg-green-50"><td class="px-4 py-2 font-semibold text-green-800">Stable</td><td class="px-4 py-2">GREEN</td><td class="px-4 py-2">Non-urgent</td><td class="px-4 py-2">Waiting</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>3. Vital sign thresholds</h2>
+  <div class="not-prose overflow-x-auto mb-8">
+    <table class="min-w-full text-sm border border-slate-200">
+      <thead class="bg-slate-50">
+        <tr><th class="px-4 py-2 text-left border-b">Measure</th><th class="px-4 py-2 text-left border-b">RED (critical)</th><th class="px-4 py-2 text-left border-b">High risk</th></tr>
+      </thead>
+      <tbody>
+        <tr class="border-b"><td class="px-4 py-2 font-medium">SpO₂</td><td class="px-4 py-2">&lt; 90%</td><td class="px-4 py-2">90–93%</td></tr>
+        <tr class="border-b"><td class="px-4 py-2 font-medium">Heart rate</td><td class="px-4 py-2">&gt; 130 or &lt; 40 bpm</td><td class="px-4 py-2">&gt; 120 or &lt; 50 bpm</td></tr>
+        <tr class="border-b"><td class="px-4 py-2 font-medium">Temperature</td><td class="px-4 py-2">&lt; 35°C</td><td class="px-4 py-2">≥ 39.5°C</td></tr>
+        <tr class="border-b"><td class="px-4 py-2 font-medium">Systolic BP</td><td class="px-4 py-2">&lt; 90 or &gt; 200 mmHg</td><td class="px-4 py-2">&gt; 180 mmHg</td></tr>
+        <tr><td class="px-4 py-2 font-medium">Respiratory rate</td><td class="px-4 py-2">&gt; 30 or &lt; 8 /min</td><td class="px-4 py-2">&gt; 24 or &lt; 10 /min</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>4. Symptom RED flags (examples)</h2>
+  <p>If the symptoms text contains any of these (partial match), acuity is raised — often to <strong>RED</strong>:</p>
+  <div class="not-prose overflow-x-auto mb-8">
+    <table class="min-w-full text-sm border border-slate-200">
+      <thead class="bg-slate-50"><tr><th class="px-4 py-2 text-left border-b">Category</th><th class="px-4 py-2 text-left border-b">Examples</th></tr></thead>
+      <tbody>
+        <tr class="border-b"><td class="px-4 py-2">Breathing</td><td class="px-4 py-2">difficulty breathing, respiratory distress, choking, cyanosis</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">Circulation</td><td class="px-4 py-2">severe bleeding, shock, no pulse</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">Neurological</td><td class="px-4 py-2">unconscious, seizure, stroke, slurred speech, weakness one side</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">Cardiac</td><td class="px-4 py-2">chest pain, cardiac arrest</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">Trauma</td><td class="px-4 py-2">major trauma, gunshot, stab wound, severe burns</td></tr>
+        <tr><td class="px-4 py-2">Other</td><td class="px-4 py-2">overdose, eclampsia, sepsis</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>5. Special populations</h2>
+  <div class="not-prose overflow-x-auto mb-8">
+    <table class="min-w-full text-sm border border-slate-200">
+      <thead class="bg-slate-50"><tr><th class="px-4 py-2 text-left border-b">Group</th><th class="px-4 py-2 text-left border-b">Detection</th><th class="px-4 py-2 text-left border-b">Effect</th></tr></thead>
+      <tbody>
+        <tr class="border-b"><td class="px-4 py-2">Elderly (≥ 65)</td><td class="px-4 py-2">Birth date</td><td class="px-4 py-2">Higher risk score</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">Infant (&lt; 1 yr)</td><td class="px-4 py-2">Birth date</td><td class="px-4 py-2">Higher risk score</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">Pregnancy</td><td class="px-4 py-2">Keywords in symptoms</td><td class="px-4 py-2">Higher risk; obstetric emergency → RED</td></tr>
+        <tr><td class="px-4 py-2">Chronic illness</td><td class="px-4 py-2">Keywords (diabetes, hypertension, etc.)</td><td class="px-4 py-2">Higher risk score</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>6. Priority score</h2>
+  <div class="not-prose overflow-x-auto mb-8">
+    <table class="min-w-full text-sm border border-slate-200">
+      <thead class="bg-slate-50"><tr><th class="px-4 py-2 text-left border-b">Score</th><th class="px-4 py-2 text-left border-b">Interpretation</th></tr></thead>
+      <tbody>
+        <tr class="border-b"><td class="px-4 py-2">80–100</td><td class="px-4 py-2">Critical emergency</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">55–79</td><td class="px-4 py-2">High priority</td></tr>
+        <tr class="border-b"><td class="px-4 py-2">30–54</td><td class="px-4 py-2">Moderate</td></tr>
+        <tr><td class="px-4 py-2">0–29</td><td class="px-4 py-2">Low / stable</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>7. Safety principles</h2>
+  <ul>
+    <li>When uncertain between two tiers, the system chooses <strong>higher</strong> acuity.</li>
+    <li>Stroke, heart attack, and sepsis patterns are not downgraded because vitals look near-normal.</li>
+    <li>Output supports triage only — not a definitive diagnosis.</li>
+  </ul>
+
+  <p class="not-prose mt-8">
+    <a href="{% url 'dashboard:home' %}" class="text-teal-700 hover:underline">← Back to dashboard</a>
+  </p>
+</div>
+{% endblock %}

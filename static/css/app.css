@@ -1,0 +1,305 @@
+.form-input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #14b8a6;
+  border-color: #14b8a6;
+}
+
+.login-email-input {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-indicator.htmx-request {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Global top progress bar while HTMX requests are in flight */
+#htmx-global-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, #0d9488, #14b8a6);
+  z-index: 9999;
+  transition: width 0.2s ease;
+  pointer-events: none;
+}
+
+body.htmx-request #htmx-global-indicator {
+  width: 70%;
+  animation: htmx-progress-pulse 1.2s ease-in-out infinite;
+}
+
+body.htmx-request.htmx-settled #htmx-global-indicator {
+  width: 100%;
+}
+
+@keyframes htmx-progress-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.btn-loading {
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  border-radius: 0.375rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (max-width: 640px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* App shell — sidebar & navigation */
+.app-sidebar {
+  background: linear-gradient(180deg, #115e59 0%, #0f766e 45%, #134e4a 100%);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.nav-link-active {
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  box-shadow: inset 3px 0 0 0 #5eead4;
+}
+
+.nav-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.nav-link-active .nav-icon {
+  opacity: 1;
+}
+
+.app-header {
+  isolation: isolate;
+}
+
+/* Bulk discharge button — HTMX loading state */
+.bulk-discharge-btn .htmx-indicator {
+  display: none;
+}
+
+.bulk-discharge-btn.htmx-request {
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.bulk-discharge-btn.htmx-request .htmx-indicator {
+  display: inline-flex;
+}
+
+.bulk-discharge-btn.htmx-request .bulk-discharge-label {
+  display: none;
+}
+
+.bulk-readmit-btn .htmx-indicator {
+  display: none;
+}
+
+.bulk-readmit-btn.htmx-request {
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.bulk-readmit-btn.htmx-request .htmx-indicator {
+  display: inline-flex;
+}
+
+.bulk-readmit-btn.htmx-request .bulk-readmit-label {
+  display: none;
+}
+
+/* Bulk discharge confirmation modal */
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.confirm-modal {
+  width: 100%;
+  max-width: 28rem;
+  background: #fff;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  padding: 1.5rem;
+}
+
+.confirm-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+/* Auto-dismissing notification alerts */
+.notify-alert {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    max-height 0.35s ease,
+    margin 0.35s ease,
+    padding 0.35s ease;
+}
+
+.notify-alert--hiding {
+  opacity: 0;
+  transform: translateY(-4px);
+  max-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden;
+  border-width: 0 !important;
+}
+
+/* Admin dashboard */
+.admin-stat-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-left-width: 4px;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.admin-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  line-height: 1.2;
+}
+
+.admin-chart-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.admin-chart-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.admin-chart-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.125rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-quick-card {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-quick-card:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.08);
+}
+
+.admin-quick-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}

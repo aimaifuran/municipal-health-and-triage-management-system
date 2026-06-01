@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block page_title %}Audit Logs{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-semibold text-slate-900">Audit & Security Logs</h2>
+      <p class="text-sm text-slate-600">Recent system actions, authentication events, and failed login attempts.</p>
+    </div>
+    <a href="{% url 'dashboard:home' %}" class="text-sm text-teal-700 hover:underline">Back to Admin Dashboard</a>
+  </div>
+
+  <section class="bg-white rounded-xl border border-slate-200 shadow-sm">
+    <div class="px-4 py-3 border-b border-slate-100">
+      <h3 class="font-semibold text-slate-800">Recent Audit Events</h3>
+    </div>
+    <div class="px-4 pt-4">
+      {% include "dashboard/partials/table_filters.html" with table_filters=audit_table_filters filter_form_id=audit_filter_form_id show_severity_filter=False search_label="Search audit log" search_placeholder="Action, user, IP, object…" hx_post_url=audit_partial_url hx_target="#audit-table-container" reset_page_param=audit_page_param %}
+    </div>
+    <div id="audit-table-container" class="overflow-x-auto p-4 pt-0">
+      {% include "dashboard/partials/admin_audit_table.html" %}
+    </div>
+  </section>
+
+  <section class="bg-white rounded-xl border border-slate-200 shadow-sm">
+    <div class="px-4 py-3 border-b border-slate-100">
+      <h3 class="font-semibold text-slate-800">Recent Login Attempts</h3>
+    </div>
+    <div class="px-4 pt-4">
+      {% include "dashboard/partials/table_filters.html" with table_filters=login_table_filters filter_form_id=login_filter_form_id show_severity_filter=False search_label="Search login attempts" search_placeholder="Email or IP address…" hx_post_url=login_partial_url hx_target="#login-table-container" reset_page_param=login_page_param %}
+    </div>
+    <div id="login-table-container" class="overflow-x-auto p-4 pt-0">
+      {% include "dashboard/partials/admin_login_table.html" %}
+    </div>
+  </section>
+</div>
+{% endblock %}

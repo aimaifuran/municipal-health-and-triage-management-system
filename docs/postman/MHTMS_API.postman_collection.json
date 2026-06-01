@@ -1,0 +1,50 @@
+{
+  "info": {
+    "name": "MHTMS API v1",
+    "description": "Municipal Health & Triage Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "https://your-app.onrender.com"},
+    {"key": "access_token", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/api/v1/auth/login/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"doctor@mhtms.gov.ph\", \"password\": \"DemoPass123!\"}"
+            }
+          }
+        },
+        {
+          "name": "Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
+            "url": "{{base_url}}/api/v1/auth/profile/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Masked Health Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/public/health-stats/?region=Region%20VII"
+          }
+        }
+      ]
+    }
+  ]
+}

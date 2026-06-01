@@ -1,0 +1,79 @@
+<form
+  method="post"
+  class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-end gap-2 mb-4"
+  role="search"
+  {% if filter_form_id %}id="{{ filter_form_id }}"{% endif %}
+  {% if hx_swap_oob %}hx-swap-oob="true"{% endif %}
+  {% if hx_post_url %}
+  hx-post="{{ hx_post_url }}"
+  hx-target="{{ hx_target }}"
+  hx-swap="{{ hx_swap|default:'innerHTML' }}"
+  hx-trigger="submit"
+  {% endif %}
+>
+  {% csrf_token %}
+  {% if reset_page_param %}
+  <input type="hidden" name="{{ reset_page_param }}" value="1">
+  {% endif %}
+
+  <div class="flex-1 min-w-[10rem]">
+    <label for="{{ filter_form_id|default:'filter' }}_q" class="block text-xs font-medium text-slate-600 mb-1">
+      {{ search_label|default:"Search" }}
+    </label>
+    <input
+      type="search"
+      id="{{ filter_form_id|default:'filter' }}_q"
+      name="{{ table_filters.q_param }}"
+      value="{{ table_filters.q }}"
+      placeholder="{{ search_placeholder|default:'Search…' }}"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+      autocomplete="off"
+    >
+  </div>
+
+  {% if show_severity_filter and severity_before_actions %}
+  <div class="sm:w-40">
+    <label for="{{ filter_form_id|default:'filter' }}_severity" class="block text-xs font-medium text-slate-600 mb-1">Severity</label>
+    <select
+      id="{{ filter_form_id|default:'filter' }}_severity"
+      name="{{ table_filters.severity_param }}"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+    >
+      <option value="">All severities</option>
+      {% for value, label in severity_choices %}
+      <option value="{{ value }}" {% if table_filters.severity == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <div class="flex gap-2 sm:pb-0">
+    <button
+      type="submit"
+      class="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 min-h-[42px]"
+    >Apply</button>
+    <button
+      type="submit"
+      name="clear_filters"
+      value="1"
+      class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 min-h-[42px]"
+      {% if hx_post_url %}formaction="{{ hx_post_url }}"{% endif %}
+    >Clear</button>
+  </div>
+
+  {% if show_severity_filter and not severity_before_actions %}
+  <div class="sm:w-40">
+    <label for="{{ filter_form_id|default:'filter' }}_severity" class="block text-xs font-medium text-slate-600 mb-1">Severity</label>
+    <select
+      id="{{ filter_form_id|default:'filter' }}_severity"
+      name="{{ table_filters.severity_param }}"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+    >
+      <option value="">All severities</option>
+      {% for value, label in severity_choices %}
+      <option value="{{ value }}" {% if table_filters.severity == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+</form>

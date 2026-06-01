@@ -1,0 +1,7 @@
+{% if filter_oob %}
+{% include "dashboard/partials/table_filters.html" with table_filters=queue_table_filters filter_form_id=filter_form_id show_severity_filter=True severity_before_actions=severity_before_actions search_placeholder="Patient ID or name" hx_post_url=queue_partial_url hx_target=queue_hx_target reset_page_param="queue_page" hx_swap_oob=True severity_choices=severity_choices %}
+{% endif %}
+<div class="mt-1">
+  {% include "dashboard/partials/queue_list.html" with queue=queue_page.object_list can_edit_triage=can_edit_triage show_doctor_consult_actions=show_doctor_consult_actions %}
+</div>
+{% include "dashboard/partials/pagination.html" with page_obj=queue_page page_param=page_param pagination_post_url=queue_partial_url filter_form_id=filter_form_id hx_target=queue_hx_target %}

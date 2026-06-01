@@ -1,0 +1,18 @@
+{% load mhtms_tags %}
+<div class="notify-alert mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800" role="status">
+  Vitals saved for <strong>{{ record.patient.patient_number }}</strong>.
+  Priority score <strong class="{% priority_color record.priority_score %}">{{ record.priority_score }}</strong>
+  — {% severity_badge record.severity_level %}
+</div>
+
+<div id="nurse-patient-select" hx-swap-oob="true">
+  {% include "dashboard/partials/nurse_patient_select.html" %}
+</div>
+
+<div id="nurse-queue-panel" hx-swap-oob="true">
+  {% include "dashboard/partials/queue_panel.html" with queue_page=queue_page can_edit_triage=can_edit_triage extra_params=extra_params %}
+</div>
+
+<div id="triage-workspace">
+  <p class="text-sm text-slate-500 py-6 text-center">Select another patient to record or update vitals.</p>
+</div>

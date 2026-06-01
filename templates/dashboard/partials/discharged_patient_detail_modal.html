@@ -1,0 +1,173 @@
+{% load mhtms_tags %}
+<div
+  class="confirm-modal-backdrop"
+  x-data
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="discharged-patient-detail-title"
+  @click.self="$el.remove()"
+  @keydown.escape.window="$el.remove()"
+>
+  <div class="confirm-modal max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
+    <div class="flex items-start justify-between gap-4 mb-4">
+      <div class="min-w-0">
+        <h3 id="discharged-patient-detail-title" class="text-lg font-semibold text-slate-900">
+          {{ patient.full_name }}
+        </h3>
+        <p class="text-sm text-slate-500 mt-0.5">{{ patient.patient_number }} · Discharged patient record</p>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+        aria-label="Close"
+        @click="$el.closest('.confirm-modal-backdrop').remove()"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <section class="mb-5">
+      <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Patient information</h4>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <div>
+          <dt class="text-slate-500">Full name</dt>
+          <dd class="font-medium text-slate-900">{{ patient.full_name }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Patient ID</dt>
+          <dd class="font-medium text-slate-900">{{ patient.patient_number }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Date of birth</dt>
+          <dd class="text-slate-800">{{ patient.birth_date|date:"F j, Y" }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Gender</dt>
+          <dd class="text-slate-800">{{ patient.get_gender_display }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Contact number</dt>
+          <dd class="text-slate-800">{{ patient.contact_number }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Emergency contact</dt>
+          <dd class="text-slate-800">{{ patient.emergency_contact }}</dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="text-slate-500">Address</dt>
+          <dd class="text-slate-800">{{ patient.address }}</dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="text-slate-500">Clinic</dt>
+          <dd class="text-slate-800">{{ patient.clinic.name }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    {% if triage %}
+    <section class="mb-5 pb-5 border-b border-slate-100">
+      <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Triage &amp; vitals</h4>
+      <dl class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm mb-3">
+        <div>
+          <dt class="text-slate-500">Severity</dt>
+          <dd class="mt-0.5">{% severity_badge triage.severity_level %}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Priority score</dt>
+          <dd class="font-semibold {% priority_color triage.priority_score %}">{{ triage.priority_score }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Triage status</dt>
+          <dd class="text-slate-800">{{ triage.get_triage_status_display }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Blood pressure</dt>
+          <dd class="text-slate-800">{{ triage.blood_pressure }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Heart rate</dt>
+          <dd class="text-slate-800">{{ triage.heart_rate }} bpm</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Respiratory rate</dt>
+          <dd class="text-slate-800">{{ triage.respiratory_rate }} /min</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">SpO₂</dt>
+          <dd class="text-slate-800">{{ triage.oxygen_saturation }}%</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Temperature</dt>
+          <dd class="text-slate-800">{{ triage.body_temperature }} °C</dd>
+        </div>
+        {% if triage.nurse %}
+        <div>
+          <dt class="text-slate-500">Recorded by</dt>
+          <dd class="text-slate-800">{{ triage.nurse.get_full_name|default:triage.nurse.email }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+      <div class="text-sm">
+        <dt class="text-slate-500 mb-1">Symptoms</dt>
+        <dd class="text-slate-800 whitespace-pre-wrap rounded-lg bg-slate-50 border border-slate-100 p-3">{{ triage.symptoms }}</dd>
+      </div>
+    </section>
+    {% endif %}
+
+    <section>
+      <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Consultation &amp; discharge</h4>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
+        <div>
+          <dt class="text-slate-500">Attending doctor</dt>
+          <dd class="text-slate-800">{{ consultation.doctor.get_full_name|default:consultation.doctor.email }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Admitted</dt>
+          <dd class="text-slate-800">
+            {% if consultation.admitted_at %}{{ consultation.admitted_at|date:"M j, Y g:i A" }}{% else %}—{% endif %}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Discharged</dt>
+          <dd class="text-slate-800">
+            {% if consultation.discharged_at %}{{ consultation.discharged_at|date:"M j, Y g:i A" }}{% else %}—{% endif %}
+          </dd>
+        </div>
+      </dl>
+      <div class="space-y-3 text-sm">
+        <div>
+          <dt class="text-slate-500 mb-1">Diagnosis</dt>
+          <dd class="text-slate-800 whitespace-pre-wrap rounded-lg bg-slate-50 border border-slate-100 p-3">{{ consultation.diagnosis }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500 mb-1">Treatment</dt>
+          <dd class="text-slate-800 whitespace-pre-wrap rounded-lg bg-slate-50 border border-slate-100 p-3">{{ consultation.treatment }}</dd>
+        </div>
+        {% if consultation.prescription %}
+        <div>
+          <dt class="text-slate-500 mb-1">Prescription</dt>
+          <dd class="text-slate-800 whitespace-pre-wrap rounded-lg bg-slate-50 border border-slate-100 p-3">{{ consultation.prescription }}</dd>
+        </div>
+        {% endif %}
+        {% if consultation.consultation_notes %}
+        <div>
+          <dt class="text-slate-500 mb-1">Consultation notes</dt>
+          <dd class="text-slate-800 whitespace-pre-wrap rounded-lg bg-slate-50 border border-slate-100 p-3">{{ consultation.consultation_notes }}</dd>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <div class="mt-6 flex justify-end">
+      <button
+        type="button"
+        class="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 min-h-[44px]"
+        @click="$el.closest('.confirm-modal-backdrop').remove()"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>

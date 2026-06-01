@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load mhtms_tags %}
+{% block page_title %}Nurse Dashboard{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <section class="bg-white rounded-xl shadow-sm border p-4 md:p-6">
+    <h2 class="text-lg font-semibold mb-2">Incoming Patients — Triage Queue</h2>
+    <p class="text-xs text-slate-500 mb-2">Updates every 10 seconds when doctors admit or discharge patients.</p>
+    {% include "dashboard/partials/table_filters.html" with table_filters=queue_table_filters filter_form_id="queue-filters-form" show_severity_filter=True search_placeholder="Patient ID or name" hx_post_url=queue_partial_url hx_target="#nurse-queue-panel" reset_page_param="queue_page" %}
+    <div
+      id="nurse-queue-panel"
+      hx-post="{{ queue_partial_url }}"
+      hx-include="#queue-filters-form"
+      hx-trigger="every 10s, refreshNursePanels from:body"
+      hx-swap="innerHTML"
+      hx-indicator="#nurse-queue-indicator"
+    >
+      <div id="nurse-queue-indicator" class="htmx-indicator flex items-center gap-2 text-xs text-slate-500 py-1" role="status">
+        {% include "partials/loading_spinner.html" %}
+        <span>Refreshing queue…</span>
+      </div>
+      {% include "dashboard/partials/queue_panel.html" with queue_page=queue_page can_edit_triage=can_edit_triage queue_partial_url=queue_partial_url page_param="queue_page" filter_form_id="queue-filters-form" queue_hx_target="#nurse-queue-panel" table_filters=queue_table_filters severity_choices=severity_choices %}
+    </div>
+  </section>
+
+  <section class="bg-white rounded-xl shadow-sm border p-4 md:p-6 space-y-6">
+    <div>
+      <h2 class="text-lg font-semibold mb-1">Register New Patient</h2>
+      <p class="text-sm text-slate-600 mb-3">Add walk-in or new arrivals, then record vitals in one flow.</p>
+      <div id="patient-register-panel">
+        {% include "dashboard/partials/patient_register_panel.html" %}
+      </div>
+    </div>
+
+    <div class="border-t border-slate-100 pt-6">
+      <h2 class="text-lg font-semibold mb-1">Patients Awaiting Triage</h2>
+      <p class="text-sm text-slate-600 mb-2">Registered patients without active triage records.</p>
+      {% include "dashboard/partials/table_filters.html" with table_filters=awaiting_table_filters filter_form_id="awaiting-filters-form" show_severity_filter=False search_placeholder="Search patient ID or name…" hx_post_url=awaiting_partial_url hx_target="#awaiting-table-container" reset_page_param="awaiting_page" %}
+      <div
+        id="awaiting-table-container"
+        hx-post="{{ awaiting_partial_url }}"
+        hx-include="#awaiting-filters-form"
+        hx-trigger="every 10s, refreshNursePanels from:body"
+        hx-swap="innerHTML"
+      >
+        {% include "dashboard/partials/awaiting_patients_table.html" %}
+      </div>
+    </div>
+
+    <div class="border-t border-slate-100 pt-6">
+      <h2 class="text-lg font-semibold mb-1">Record Vitals &amp; Symptoms</h2>
+      <p class="text-sm text-slate-600 mb-4">
+        Select a patient, enter vitals and symptoms, then submit to the triage queue.
+        <a href="{% url 'dashboard:triage-severity-docs' %}" class="text-teal-700 hover:underline" target="_blank" rel="noopener">How severity is calculated →</a>
+      </p>
+
+      <div
+        id="nurse-patient-select"
+        class="mb-4"
+        hx-get="{{ patient_select_partial_url }}"
+        hx-trigger="every 10s, refreshNursePanels from:body"
+        hx-swap="innerHTML"
+      >
+        {% include "dashboard/partials/nurse_patient_select.html" %}
+      </div>
+
+      <div id="triage-form-indicator" class="htmx-indicator flex items-center gap-2 text-xs text-slate-500 py-1" role="status">
+        {% include "partials/loading_spinner.html" %}
+        <span>Loading form…</span>
+      </div>
+
+      <div id="triage-workspace" class="border-t border-slate-100 pt-4">
+        <p class="text-sm text-slate-500 text-center py-6">Select a patient above or use Record vitals from the awaiting list.</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+<div id="patient-register-panel">
+  <div id="patient-register-indicator" class="htmx-indicator flex items-center gap-2 text-xs text-slate-500 py-1 mb-2" role="status">
+    {% include "partials/loading_spinner.html" %}
+    <span>Registering patient…</span>
+  </div>
+  {% include "dashboard/partials/patient_register_form.html" with form=patient_register_form %}
+</div>

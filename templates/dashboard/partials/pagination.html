@@ -1,0 +1,58 @@
+<div class="mt-3 flex flex-col items-end gap-2">
+  {% if page_obj.paginator.count %}
+  <p class="text-xs text-slate-500 text-right">
+    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+  </p>
+  {% endif %}
+  {% if page_obj.has_other_pages %}
+  <nav class="flex flex-wrap items-center justify-end gap-2 text-sm" aria-label="Pagination">
+    {% if pagination_post_url and filter_form_id %}
+      {% if page_obj.has_previous %}
+      <button
+        type="button"
+        class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
+        hx-post="{{ pagination_post_url }}"
+        hx-include="#{{ filter_form_id }}"
+        hx-vals='{"{{ page_param }}": "{{ page_obj.previous_page_number }}"}'
+        hx-target="{{ hx_target }}"
+        hx-swap="{{ hx_swap|default:'innerHTML' }}"
+      >Previous</button>
+      {% else %}
+      <span class="px-3 py-1.5 rounded-md border border-slate-200 text-slate-400 cursor-not-allowed">Previous</span>
+      {% endif %}
+      <span class="px-2 text-slate-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <button
+        type="button"
+        class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
+        hx-post="{{ pagination_post_url }}"
+        hx-include="#{{ filter_form_id }}"
+        hx-vals='{"{{ page_param }}": "{{ page_obj.next_page_number }}"}'
+        hx-target="{{ hx_target }}"
+        hx-swap="{{ hx_swap|default:'innerHTML' }}"
+      >Next</button>
+      {% else %}
+      <span class="px-3 py-1.5 rounded-md border border-slate-200 text-slate-400 cursor-not-allowed">Next</span>
+      {% endif %}
+    {% else %}
+      {% if page_obj.has_previous %}
+      <a
+        href="?{{ page_param }}={{ page_obj.previous_page_number }}{% if role_filter and role_filter != 'all' %}&amp;role={{ role_filter }}{% endif %}{% if edit_clinic %}&amp;edit_clinic={{ edit_clinic.pk }}{% endif %}{% if edit_staff %}&amp;edit_staff={{ edit_staff.pk }}{% endif %}"
+        class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
+      >Previous</a>
+      {% else %}
+      <span class="px-3 py-1.5 rounded-md border border-slate-200 text-slate-400 cursor-not-allowed">Previous</span>
+      {% endif %}
+      <span class="px-2 text-slate-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <a
+        href="?{{ page_param }}={{ page_obj.next_page_number }}{% if role_filter and role_filter != 'all' %}&amp;role={{ role_filter }}{% endif %}{% if edit_clinic %}&amp;edit_clinic={{ edit_clinic.pk }}{% endif %}{% if edit_staff %}&amp;edit_staff={{ edit_staff.pk }}{% endif %}"
+        class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
+      >Next</a>
+      {% else %}
+      <span class="px-3 py-1.5 rounded-md border border-slate-200 text-slate-400 cursor-not-allowed">Next</span>
+      {% endif %}
+    {% endif %}
+  </nav>
+  {% endif %}
+</div>

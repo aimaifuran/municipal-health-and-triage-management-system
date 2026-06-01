@@ -1,0 +1,73 @@
+{% load mhtms_tags %}
+<div id="triage-form-panel">
+  <p class="text-sm text-slate-600 mb-4">
+  {% if triage_record %}
+    Updating vitals for <span class="font-medium text-slate-800">{{ patient.full_name }}</span>
+    ({{ patient.patient_number }}).
+  {% else %}
+    Recording initial triage for <span class="font-medium text-slate-800">{{ patient.full_name }}</span>
+    ({{ patient.patient_number }}).
+  {% endif %}
+  </p>
+
+  <form
+    method="post"
+    action="{% url 'dashboard:nurse-triage-submit' %}"
+    hx-post="{% url 'dashboard:nurse-triage-submit' %}"
+    hx-target="#triage-workspace"
+    hx-swap="innerHTML"
+    hx-indicator="#triage-submit-indicator"
+  >
+    {% csrf_token %}
+    <input type="hidden" name="patient_id" value="{{ patient.id }}">
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="id_blood_pressure" class="block text-sm font-medium text-slate-700 mb-1">{{ form.blood_pressure.label }}</label>
+        {{ form.blood_pressure }}
+        {% if form.blood_pressure.errors %}<p class="text-xs text-red-600 mt-1">{{ form.blood_pressure.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label for="id_heart_rate" class="block text-sm font-medium text-slate-700 mb-1">{{ form.heart_rate.label }}</label>
+        {{ form.heart_rate }}
+        {% if form.heart_rate.errors %}<p class="text-xs text-red-600 mt-1">{{ form.heart_rate.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label for="id_respiratory_rate" class="block text-sm font-medium text-slate-700 mb-1">{{ form.respiratory_rate.label }}</label>
+        {{ form.respiratory_rate }}
+        {% if form.respiratory_rate.errors %}<p class="text-xs text-red-600 mt-1">{{ form.respiratory_rate.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label for="id_oxygen_saturation" class="block text-sm font-medium text-slate-700 mb-1">{{ form.oxygen_saturation.label }}</label>
+        {{ form.oxygen_saturation }}
+        {% if form.oxygen_saturation.errors %}<p class="text-xs text-red-600 mt-1">{{ form.oxygen_saturation.errors.0 }}</p>{% endif %}
+      </div>
+      <div class="sm:col-span-2">
+        <label for="id_body_temperature" class="block text-sm font-medium text-slate-700 mb-1">{{ form.body_temperature.label }}</label>
+        {{ form.body_temperature }}
+        {% if form.body_temperature.errors %}<p class="text-xs text-red-600 mt-1">{{ form.body_temperature.errors.0 }}</p>{% endif %}
+      </div>
+      <div class="sm:col-span-2">
+        <label for="id_symptoms" class="block text-sm font-medium text-slate-700 mb-1">{{ form.symptoms.label }}</label>
+        {{ form.symptoms }}
+        {% if form.symptoms.errors %}<p class="text-xs text-red-600 mt-1">{{ form.symptoms.errors.0 }}</p>{% endif %}
+      </div>
+    </div>
+
+    {% if form.non_field_errors %}
+    <p class="text-sm text-red-600 mt-3">{{ form.non_field_errors.0 }}</p>
+    {% endif %}
+
+    <div id="triage-submit-indicator" class="htmx-indicator flex items-center gap-2 text-sm text-teal-700 mt-4" role="status">
+      {% include "partials/loading_spinner.html" %}
+      <span>Saving vitals…</span>
+    </div>
+
+    <button
+      type="submit"
+      class="mt-4 w-full bg-teal-600 text-white py-2.5 rounded-lg hover:bg-teal-700 transition font-medium min-h-[44px]"
+    >
+      {% if triage_record %}Update vitals &amp; priority{% else %}Submit to triage queue{% endif %}
+    </button>
+  </form>
+</div>

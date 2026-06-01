@@ -1,0 +1,21 @@
+{% load mhtms_tags %}
+<div class="flex items-center gap-2 sm:gap-3 shrink-0">
+  {% if user.clinic %}
+  <span class="hidden md:inline-flex items-center max-w-[15rem] truncate text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full" title="{{ user.clinic.name }}">
+    <svg class="w-3.5 h-3.5 mr-1 text-teal-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    {{ user.clinic.name }}
+  </span>
+  {% endif %}
+  <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset {{ user.role|role_badge_class }}">
+    {{ user.get_role_display }}
+  </span>
+  <div class="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-200">
+    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-teal-700 text-xs font-bold text-white">
+      {{ user|user_initials }}
+    </span>
+    <div class="hidden lg:block max-w-[11rem]">
+      <p class="text-sm font-medium text-slate-800 truncate">{{ user.full_name|default:user.email }}</p>
+      <p class="text-xs text-slate-500 truncate">{{ user.email }}</p>
+    </div>
+  </div>
+</div>

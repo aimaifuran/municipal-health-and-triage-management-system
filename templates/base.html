@@ -1,0 +1,104 @@
+{% load static mhtms_tags %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{ APP_FULL_NAME }}">
+  <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/notify-alerts.js' %}" defer></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full bg-slate-50 text-slate-900" x-data="{ sidebarOpen: false, toasts: [] }">
+  <div id="htmx-global-indicator" class="htmx-indicator" role="progressbar" aria-label="Loading"></div>
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 bg-teal-600 text-white px-3 py-2 rounded-lg shadow">Skip to content</a>
+
+  {% if user.is_authenticated %}
+  <div class="flex h-full min-h-screen">
+    <aside class="app-sidebar hidden lg:flex lg:flex-col w-72 shrink-0 text-white" aria-label="Main navigation">
+      {% include "partials/sidebar.html" %}
+    </aside>
+
+    <div
+      x-show="sidebarOpen"
+      x-cloak
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 z-40 lg:hidden"
+      @keydown.escape.window="sidebarOpen=false"
+    >
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="sidebarOpen=false" aria-hidden="true"></div>
+      <aside
+        class="app-sidebar relative w-72 max-w-[85vw] h-full shadow-2xl"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="-translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="-translate-x-full"
+      >
+        <button
+          type="button"
+          class="absolute top-3 right-3 p-2 rounded-lg text-teal-100 hover:bg-white/10"
+          @click="sidebarOpen=false"
+          aria-label="Close menu"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        {% include "partials/sidebar.html" %}
+      </aside>
+    </div>
+
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="app-header sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200/80 shadow-sm">
+        <div class="flex items-center justify-between gap-4 px-4 py-3 md:px-6 min-h-[4rem]">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <button
+              type="button"
+              class="lg:hidden shrink-0 p-2 -ml-1 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-teal-800 transition"
+              @click="sidebarOpen=true"
+              aria-label="Open menu"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+            <div class="min-w-0">
+              <h1 class="text-lg md:text-xl font-semibold text-slate-900 truncate">{% block page_title %}Dashboard{% endblock %}</h1>
+              <p class="text-xs text-slate-500 hidden sm:block truncate">{{ APP_FULL_NAME }}</p>
+            </div>
+          </div>
+          {% include "partials/app_header_actions.html" %}
+        </div>
+      </header>
+      <main id="main-content" class="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+  {% else %}
+      <main id="main-content" class="min-h-full">
+  {% endif %}
+        {% include "partials/messages.html" %}
+        {% block content %}{% endblock %}
+      </main>
+  {% if user.is_authenticated %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="fixed bottom-4 right-4 z-50 space-y-2" aria-live="polite">
+    <template x-for="(toast, i) in toasts" :key="i">
+      <div class="px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm"
+           :class="toast.type === 'error' ? 'bg-red-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-green-600'"
+           x-text="toast.message"
+           x-init="setTimeout(() => toasts.splice(i, 1), 5000)"></div>
+    </template>
+  </div>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,50 @@
+{% load mhtms_tags %}
+{% if filter_oob %}
+{% include "dashboard/partials/table_filters.html" with table_filters=table_filters filter_form_id=filter_form_id show_severity_filter=False search_label="Search staff" search_placeholder="Name, email, clinic…" hx_post_url=staff_partial_url hx_target="#staff-table-container" reset_page_param="page" hx_swap_oob=True severity_choices=severity_choices %}
+{% endif %}
+<div class="overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-50">
+      <tr>
+        <th class="px-4 py-2 text-left">Name</th>
+        <th class="px-4 py-2 text-left">Email</th>
+        <th class="px-4 py-2 text-left">Role</th>
+        <th class="px-4 py-2 text-left">Clinic</th>
+        <th class="px-4 py-2 text-left">Status</th>
+        <th class="px-4 py-2 text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for member in staff_users %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-2">{{ member.full_name }}</td>
+        <td class="px-4 py-2">{{ member.email }}</td>
+        <td class="px-4 py-2">
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ring-inset {{ member.role|role_badge_class }}">
+            {{ member.get_role_display }}
+          </span>
+        </td>
+        <td class="px-4 py-2">{{ member.clinic.name|default:"—" }}</td>
+        <td class="px-4 py-2">
+          {% if member.is_active %}
+          <span class="text-xs text-green-700">Active</span>
+          {% else %}
+          <span class="text-xs text-slate-500">Inactive</span>
+          {% endif %}
+          {% if not member.is_verified %}
+          <span class="text-xs text-amber-700"> · Unverified</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-2 text-right">
+          <a href="{% url 'dashboard:admin-staff' %}?edit_staff={{ member.pk }}&amp;role={{ role_filter }}" class="text-teal-700 hover:underline text-sm">Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No staff accounts match your search.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "dashboard/partials/pagination.html" with page_obj=staff_page page_param=page_param pagination_post_url=staff_partial_url filter_form_id=filter_form_id hx_target="#staff-table-container" role_filter=role_filter edit_staff=edit_staff %}

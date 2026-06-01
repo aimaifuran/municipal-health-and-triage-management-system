@@ -1,0 +1,36 @@
+{% if readmit_results %}
+<div class="notify-alert mb-3 space-y-2 text-sm rounded-lg p-3 {% if readmit_results.notice %}bg-amber-50 border border-amber-100{% elif readmit_results.failed and not readmit_results.success %}bg-red-50 border border-red-100{% elif readmit_results.success %}bg-teal-50 border border-teal-100{% else %}bg-amber-50 border border-amber-100{% endif %}">
+  {% if readmit_results.notice %}
+  <p class="text-amber-900 font-medium">{{ readmit_results.notice }}</p>
+  {% endif %}
+  {% if readmit_results.success %}
+  <p class="text-teal-900 font-medium">{{ readmit_results.success|length }} patient(s) restored to the discharge list.</p>
+  {% endif %}
+  {% if readmit_results.failed %}
+  <p class="text-red-800 font-medium">{{ readmit_results.failed|length }} could not be restored:</p>
+  <ul class="list-disc list-inside text-red-700 space-y-0.5">
+    {% for item in readmit_results.failed %}
+    <li>{{ item.reason }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endif %}
+{% if results %}
+<div class="notify-alert mb-3 space-y-2 text-sm rounded-lg p-3 {% if results.notice %}bg-amber-50 border border-amber-100{% elif results.failed and not results.success %}bg-red-50 border border-red-100{% elif results.success %}bg-green-50 border border-green-100{% else %}bg-amber-50 border border-amber-100{% endif %}">
+  {% if results.notice %}
+  <p class="text-amber-900 font-medium">{{ results.notice }}</p>
+  {% endif %}
+  {% if results.success %}
+  <p class="text-green-800 font-medium">{{ results.success|length }} patient(s) discharged successfully.</p>
+  {% endif %}
+  {% if results.failed %}
+  <p class="text-red-800 font-medium">{{ results.failed|length }} could not be discharged:</p>
+  <ul class="list-disc list-inside text-red-700 space-y-0.5">
+    {% for item in results.failed %}
+    <li>{{ item.reason }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endif %}

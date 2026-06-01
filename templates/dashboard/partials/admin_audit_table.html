@@ -1,0 +1,32 @@
+{% if filter_oob %}
+{% include "dashboard/partials/table_filters.html" with table_filters=audit_table_filters filter_form_id=audit_filter_form_id show_severity_filter=False search_label="Search audit log" search_placeholder="Action, user, IP, object…" hx_post_url=audit_partial_url hx_target="#audit-table-container" reset_page_param=audit_page_param hx_swap_oob=True severity_choices=severity_choices %}
+{% endif %}
+<div class="overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-50">
+      <tr>
+        <th class="px-4 py-2 text-left">Timestamp</th>
+        <th class="px-4 py-2 text-left">Action</th>
+        <th class="px-4 py-2 text-left">Object</th>
+        <th class="px-4 py-2 text-left">User</th>
+        <th class="px-4 py-2 text-left">IP Address</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for log in audit_page.object_list %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-2 whitespace-nowrap">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+        <td class="px-4 py-2">{{ log.get_action_display|default:log.action }}</td>
+        <td class="px-4 py-2">{{ log.object_type }}{% if log.object_id %}: {{ log.object_id }}{% endif %}</td>
+        <td class="px-4 py-2">{{ log.user.email|default:"System" }}</td>
+        <td class="px-4 py-2">{{ log.ip_address|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="px-4 py-8 text-center text-slate-500">No audit records match your search.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "dashboard/partials/pagination.html" with page_obj=audit_page page_param=audit_page_param pagination_post_url=audit_partial_url filter_form_id=audit_filter_form_id hx_target="#audit-table-container" %}

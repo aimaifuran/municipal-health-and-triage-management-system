@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% load mhtms_tags %}
+{% block page_title %}Doctor Dashboard{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2 space-y-6">
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
+      <h2 class="text-lg font-semibold mb-1">Active Patient Queue</h2>
+      <p class="text-sm text-slate-600 mb-2">
+        Patients awaiting consultation. Record consultation details, then move patients to
+        <strong>Awaiting discharge</strong> when ready. Discharged patients are removed from this list.
+        <a href="{% url 'dashboard:triage-severity-docs' %}" class="text-teal-700 hover:underline ml-1" target="_blank" rel="noopener">Triage guide →</a>
+      </p>
+      <div id="doctor-consult-feedback"></div>
+      {% include "dashboard/partials/table_filters.html" with table_filters=queue_table_filters filter_form_id="queue-filters-form" show_severity_filter=True severity_before_actions=True search_placeholder="Patient ID or name" hx_post_url=queue_partial_url hx_target="#queue-container" reset_page_param="queue_page" %}
+      <div
+        id="queue-container"
+        hx-post="{{ queue_partial_url }}"
+        hx-include="#queue-filters-form"
+        hx-trigger="every 15s, refreshDoctorPanels from:body"
+        hx-swap="innerHTML"
+        hx-indicator="#queue-refresh-indicator"
+      >
+        <div id="queue-refresh-indicator" class="htmx-indicator flex items-center gap-2 text-xs text-slate-500 py-1" role="status">
+          {% include "partials/loading_spinner.html" %}
+          <span>Refreshing queue…</span>
+        </div>
+        {% include "dashboard/partials/queue_panel.html" with queue_page=queue_page can_edit_triage=False show_doctor_consult_actions=True severity_before_actions=True queue_partial_url=queue_partial_url page_param="queue_page" filter_form_id="queue-filters-form" queue_hx_target="#queue-container" table_filters=queue_table_filters severity_choices=severity_choices %}
+      </div>
+    </section>
+
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
+      <h2 class="text-lg font-semibold mb-1">Discharged Patients</h2>
+      <p class="text-sm text-slate-600 mb-2">Completed consultations — patients you have discharged from care.</p>
+      {% include "dashboard/partials/table_filters.html" with table_filters=discharged_table_filters filter_form_id="discharged-filters-form" show_severity_filter=True severity_before_actions=True search_placeholder="Patient ID or name" hx_post_url=discharged_partial_url hx_target="#discharged-container" reset_page_param="discharged_page" %}
+      <div
+        id="discharged-container"
+        hx-post="{{ discharged_partial_url }}"
+        hx-include="#discharged-filters-form"
+        hx-trigger="refreshDoctorPanels from:body"
+        hx-swap="innerHTML"
+        hx-indicator="#discharged-refresh-indicator"
+      >
+        <div id="discharged-refresh-indicator" class="htmx-indicator flex items-center gap-2 text-xs text-slate-500 py-1 mb-2" role="status">
+          {% include "partials/loading_spinner.html" %}
+          <span>Updating discharged list…</span>
+        </div>
+        {% include "dashboard/partials/discharged_patients_table.html" %}
+      </div>
+    </section>
+  </div>
+
+  <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 xl:col-span-1 h-fit">
+    {% include "dashboard/partials/bulk_discharge_panel.html" with table_filters=discharge_table_filters %}
+  </section>
+</div>
+<div id="discharged-patient-detail-modal"></div>
+<div id="doctor-consultation-modal"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("alpine:init", () => {
+    Alpine.data("doctorConsultationModal", () => ({
+      showAdmitConfirm: false,
+      patientName: "",
+      patientNumber: "",
+      alreadyAdmitted: false,
+
+      initFromDataset() {
+        this.patientName = this.$el.dataset.patientName || "";
+        this.patientNumber = this.$el.dataset.patientNumber || "";
+        this.alreadyAdmitted = this.$el.dataset.alreadyAdmitted === "true";
+      },
+
+      _submitConsultForm(action) {
+        const form = this.$refs.consultForm;
+        if (!form || typeof htmx === "undefined") return;
+        const actionInput = form.querySelector('[name="action"]');
+        if (actionInput) actionInput.value = action;
+        htmx.ajax("POST", form.getAttribute("hx-post"), {
+          source: form,
+          target: form.getAttribute("hx-target") || "#doctor-consult-feedback",
+          swap: form.getAttribute("hx-swap") || "none",
+          indicator: form.getAttribute("hx-indicator"),
+        });
+      },
+
+      submitSave() {
+        const form = this.$refs.consultForm;
+        if (form && !form.reportValidity()) return;
+        this._submitConsultForm("save");
+      },
+
+      openAdmitConfirm() {
+        const form = this.$refs.consultForm;
+        if (form && !form.reportValidity()) return;
+        this.showAdmitConfirm = true;
+      },
+
+      cancelAdmit() {
+        this.showAdmitConfirm = false;
+      },
+
+      confirmAdmit() {
+        this.showAdmitConfirm = false;
+        this._submitConsultForm("admit");
+      },
+    }));
+
+    Alpine.data("bulkDischargePanel", () => ({
+      showConfirm: false,
+      noSelection: false,
+      selectedPatients: [],
+      showReadmitConfirm: false,
+      noReadmitSelection: false,
+      selectedReadmitPatients: [],
+
+      _labelsFromChecked(checked, fallback) {
+        return Array.from(checked).map((checkbox) => {
+          const label = checkbox.closest("label");
+          const text = label?.textContent?.replace(/\s+/g, " ").trim();
+          return text || fallback;
+        });
+      },
+
+      _submitForm(form) {
+        if (!form || typeof htmx === "undefined") return;
+        htmx.ajax("POST", form.getAttribute("hx-post"), {
+          source: form,
+          target: form.getAttribute("hx-target"),
+          swap: form.getAttribute("hx-swap") || "outerHTML",
+          indicator: form.getAttribute("hx-indicator"),
+        });
+      },
+
+      openDischargeConfirm() {
+        this.showReadmitConfirm = false;
+        this.noSelection = false;
+        const form = this.$refs.dischargeForm;
+        if (!form) return;
+        const checked = form.querySelectorAll('input[name="consultation_ids"]:checked');
+        if (!checked.length) {
+          this.noSelection = true;
+          return;
+        }
+        this.selectedPatients = this._labelsFromChecked(checked, "Selected patient");
+        this.showConfirm = true;
+      },
+
+      openReadmitConfirm() {
+        this.showConfirm = false;
+        this.noReadmitSelection = false;
+        const form = this.$refs.readmitForm;
+        if (!form) return;
+        const checked = form.querySelectorAll('input[name="readmit_consultation_ids"]:checked');
+        if (!checked.length) {
+          this.noReadmitSelection = true;
+          return;
+        }
+        this.selectedReadmitPatients = this._labelsFromChecked(checked, "Selected patient");
+        this.showReadmitConfirm = true;
+      },
+
+      cancel() {
+        this.showConfirm = false;
+      },
+
+      cancelReadmit() {
+        this.showReadmitConfirm = false;
+      },
+
+      confirmDischarge() {
+        this.showConfirm = false;
+        this._submitForm(this.$refs.dischargeForm);
+      },
+
+      confirmReadmit() {
+        this.showReadmitConfirm = false;
+        this._submitForm(this.$refs.readmitForm);
+      },
+    }));
+  });
+
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    const target = event.detail.target;
+    if (!target) return;
+    if (
+      (target.id === "discharged-patient-detail-modal" || target.id === "doctor-consultation-modal")
+      && typeof Alpine !== "undefined"
+    ) {
+      Alpine.initTree(target);
+      return;
+    }
+    const panel =
+      target.id === "bulk-discharge-panel"
+        ? target
+        : target.querySelector?.("#bulk-discharge-panel");
+    if (panel && typeof Alpine !== "undefined") {
+      Alpine.initTree(panel);
+    }
+  });
+</script>
+{% endblock %}

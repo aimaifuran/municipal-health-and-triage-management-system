@@ -1,0 +1,102 @@
+{% load mhtms_tags %}
+{% if queue %}
+<div class="overflow-x-auto rounded-lg border border-slate-200">
+  <table class="min-w-full text-sm" role="list" aria-label="Active patient queue">
+    <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
+      <tr>
+        <th class="w-8 px-2 py-2 text-left font-semibold" scope="col">#</th>
+        <th class="px-2 py-2 text-left font-semibold min-w-[10rem]" scope="col">Patient</th>
+        <th class="px-2 py-2 text-left font-semibold hidden md:table-cell" scope="col">Symptoms</th>
+        <th class="px-2 py-2 text-left font-semibold hidden lg:table-cell" scope="col">Vitals</th>
+        <th class="px-2 py-2 text-left font-semibold whitespace-nowrap" scope="col">Status</th>
+        <th class="px-2 py-2 text-right font-semibold w-12" scope="col">Pts</th>
+        <th class="px-2 py-2 text-right font-semibold whitespace-nowrap" scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for item in queue %}
+      <tr
+        class="hover:bg-slate-50/80 {{ item.severity_level|queue_row_accent }}"
+        role="listitem"
+      >
+        <td class="px-2 py-2 text-xs text-slate-400 tabular-nums align-middle">{{ forloop.counter }}</td>
+        <td class="px-2 py-2 align-middle min-w-0 max-w-[14rem]">
+          <div class="flex items-center gap-1.5 min-w-0">
+            {% if item.severity_level == 'critical' %}
+              {% emergency_indicator True %}
+            {% endif %}
+            <div class="min-w-0">
+              <p class="font-medium text-slate-900 truncate leading-tight">{{ item.patient.full_name }}</p>
+              <p class="text-xs text-slate-500 truncate leading-tight">{{ item.patient.patient_number }}</p>
+            </div>
+          </div>
+          <p class="mt-0.5 text-xs text-slate-600 truncate md:hidden" title="{{ item.symptoms }}">{{ item.symptoms|truncatechars:36 }}</p>
+        </td>
+        <td class="px-2 py-2 align-middle hidden md:table-cell max-w-[11rem]">
+          <p class="text-slate-600 truncate text-xs sm:text-sm" title="{{ item.symptoms }}">{{ item.symptoms|truncatechars:48 }}</p>
+        </td>
+        <td class="px-2 py-2 align-middle hidden lg:table-cell whitespace-nowrap">
+          <span class="text-xs text-slate-600" title="Blood pressure, heart rate, SpO₂, temperature">
+            {{ item.blood_pressure }}
+            <span class="text-slate-300">·</span>
+            HR {{ item.heart_rate }}
+            <span class="text-slate-300">·</span>
+            SpO₂ {{ item.oxygen_saturation }}%
+            <span class="text-slate-300">·</span>
+            {{ item.body_temperature }}°C
+          </span>
+        </td>
+        <td class="px-2 py-2 align-middle whitespace-nowrap">
+          <div class="flex flex-wrap items-center gap-1">
+            {% severity_badge item.severity_level %}
+            {% if show_doctor_consult_actions and item.doctor_consultation_admitted %}
+            <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-900 border border-amber-200" title="Awaiting discharge">
+              Awaiting
+            </span>
+            {% elif can_edit_triage and item.patient_awaiting_discharge %}
+            <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-sky-100 text-sky-900 border border-sky-200" title="Doctor admitted — awaiting discharge">
+              With doctor
+            </span>
+            {% endif %}
+          </div>
+        </td>
+        <td class="px-2 py-2 align-middle text-right">
+          <span class="text-sm font-bold tabular-nums {% priority_color item.priority_score %}">{{ item.priority_score }}</span>
+        </td>
+        <td class="px-2 py-2 align-middle text-right whitespace-nowrap">
+          {% if show_doctor_consult_actions %}
+          <button
+            type="button"
+            class="inline-flex items-center rounded px-2 py-1 text-xs font-semibold min-h-[28px]
+              {% if item.doctor_open_consultation_id %}text-teal-700 hover:bg-teal-50{% else %}bg-teal-600 text-white hover:bg-teal-700{% endif %}"
+            hx-get="{% url 'dashboard:doctor-queue-consultation-form' %}?patient={{ item.patient.id }}"
+            hx-target="#doctor-consultation-modal"
+            hx-swap="innerHTML"
+          >
+            {% if item.doctor_open_consultation_id %}Edit{% else %}Consult{% endif %}
+          </button>
+          {% endif %}
+          {% if can_edit_triage %}
+          <button
+            type="button"
+            class="inline-flex items-center rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 min-h-[28px]"
+            hx-get="{% url 'dashboard:nurse-triage-form' %}?patient={{ item.patient.id }}"
+            hx-target="#triage-workspace"
+            hx-swap="innerHTML"
+            hx-indicator="#triage-form-indicator"
+          >
+            Vitals
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/60 px-4 py-10 text-center" role="status">
+  <p class="text-sm font-medium text-slate-700">Queue is empty</p>
+  <p class="mt-1 text-xs text-slate-500">No patients match your filters.</p>
+</div>
+{% endif %}

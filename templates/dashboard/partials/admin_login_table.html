@@ -1,0 +1,36 @@
+{% if filter_oob %}
+{% include "dashboard/partials/table_filters.html" with table_filters=login_table_filters filter_form_id=login_filter_form_id show_severity_filter=False search_label="Search login attempts" search_placeholder="Email or IP address…" hx_post_url=login_partial_url hx_target="#login-table-container" reset_page_param=login_page_param hx_swap_oob=True severity_choices=severity_choices %}
+{% endif %}
+<div class="overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-50">
+      <tr>
+        <th class="px-4 py-2 text-left">Timestamp</th>
+        <th class="px-4 py-2 text-left">Email Attempted</th>
+        <th class="px-4 py-2 text-left">Status</th>
+        <th class="px-4 py-2 text-left">IP Address</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for attempt in login_page.object_list %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-2 whitespace-nowrap">{{ attempt.timestamp|date:"Y-m-d H:i:s" }}</td>
+        <td class="px-4 py-2">{{ attempt.email_attempted }}</td>
+        <td class="px-4 py-2">
+          {% if attempt.success %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Success</span>
+          {% else %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Failed</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-2">{{ attempt.ip_address }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="px-4 py-8 text-center text-slate-500">No login attempts match your search.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "dashboard/partials/pagination.html" with page_obj=login_page page_param=login_page_param pagination_post_url=login_partial_url filter_form_id=login_filter_form_id hx_target="#login-table-container" %}

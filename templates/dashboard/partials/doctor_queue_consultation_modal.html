@@ -1,0 +1,183 @@
+{% load mhtms_tags %}
+<div
+  class="confirm-modal-backdrop"
+  x-data="doctorConsultationModal()"
+  data-patient-name="{{ patient.full_name }}"
+  data-patient-number="{{ patient.patient_number }}"
+  data-already-admitted="{% if consultation and consultation.admitted %}true{% else %}false{% endif %}"
+  x-init="initFromDataset()"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="doctor-consultation-title"
+  @click.self="!showAdmitConfirm && $el.remove()"
+  @keydown.escape.window="showAdmitConfirm ? cancelAdmit() : $el.remove()"
+>
+  <div class="confirm-modal max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
+    <div class="flex items-start justify-between gap-4 mb-4">
+      <div class="min-w-0">
+        <h3 id="doctor-consultation-title" class="text-lg font-semibold text-slate-900">
+          Consultation — {{ patient.full_name }}
+        </h3>
+        <p class="text-sm text-slate-500 mt-0.5">{{ patient.patient_number }}</p>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+        aria-label="Close"
+        @click="$el.closest('.confirm-modal-backdrop').remove()"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    {% if triage %}
+    <section class="mb-4 pb-4 border-b border-slate-100">
+      <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Current triage</h4>
+      <div class="flex flex-wrap items-center gap-2 text-sm mb-2">
+        {% severity_badge triage.severity_level %}
+        <span class="font-semibold {% priority_color triage.priority_score %}">Priority {{ triage.priority_score }}</span>
+        <span class="text-slate-500">{{ triage.blood_pressure }} · HR {{ triage.heart_rate }} · SpO₂ {{ triage.oxygen_saturation }}%</span>
+      </div>
+      <p class="text-sm text-slate-700 line-clamp-3">{{ triage.symptoms }}</p>
+    </section>
+    {% endif %}
+
+  {% if consultation and consultation.admitted %}
+    <p class="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">
+      This patient is already in <strong>Awaiting discharge</strong>. You can update consultation details below.
+    </p>
+  {% endif %}
+
+    <section>
+      <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Consultation &amp; discharge</h4>
+      <form
+        x-ref="consultForm"
+        method="post"
+        action="{% url 'dashboard:doctor-queue-consultation-submit' %}"
+        hx-post="{% url 'dashboard:doctor-queue-consultation-submit' %}"
+        hx-target="#doctor-consult-feedback"
+        hx-swap="none"
+        hx-indicator="#doctor-consultation-indicator"
+        @submit.prevent
+      >
+        {% csrf_token %}
+        <input type="hidden" name="patient_id" value="{{ patient.id }}">
+        <input type="hidden" name="action" value="save">
+
+        <div class="space-y-4">
+          <div>
+            <label for="id_diagnosis" class="block text-sm font-medium text-slate-700 mb-1">{{ form.diagnosis.label }}</label>
+            {{ form.diagnosis }}
+            {% if form.diagnosis.errors %}<p class="text-xs text-red-600 mt-1">{{ form.diagnosis.errors.0 }}</p>{% endif %}
+          </div>
+          <div>
+            <label for="id_treatment" class="block text-sm font-medium text-slate-700 mb-1">{{ form.treatment.label }}</label>
+            {{ form.treatment }}
+            {% if form.treatment.errors %}<p class="text-xs text-red-600 mt-1">{{ form.treatment.errors.0 }}</p>{% endif %}
+          </div>
+          <div>
+            <label for="id_prescription" class="block text-sm font-medium text-slate-700 mb-1">{{ form.prescription.label }}</label>
+            {{ form.prescription }}
+            {% if form.prescription.errors %}<p class="text-xs text-red-600 mt-1">{{ form.prescription.errors.0 }}</p>{% endif %}
+          </div>
+          <div>
+            <label for="id_consultation_notes" class="block text-sm font-medium text-slate-700 mb-1">{{ form.consultation_notes.label }}</label>
+            {{ form.consultation_notes }}
+            {% if form.consultation_notes.errors %}<p class="text-xs text-red-600 mt-1">{{ form.consultation_notes.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <p class="text-sm text-red-600 mt-3">{{ form.non_field_errors.0 }}</p>
+        {% endif %}
+
+        <div id="doctor-consultation-indicator" class="htmx-indicator flex items-center gap-2 text-sm text-teal-700 mt-4" role="status">
+          {% include "partials/loading_spinner.html" %}
+          <span>Saving…</span>
+        </div>
+
+        <div class="mt-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <button
+            type="button"
+            class="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 min-h-[44px]"
+            @click="$el.closest('.confirm-modal-backdrop').remove()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2.5 rounded-lg border border-teal-600 text-teal-700 text-sm font-medium hover:bg-teal-50 min-h-[44px]"
+            @click="submitSave()"
+          >
+            Save consultation
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 min-h-[44px]"
+            @click="openAdmitConfirm()"
+          >
+            Move to awaiting discharge
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div
+    x-show="showAdmitConfirm"
+    x-cloak
+    class="confirm-modal-backdrop !z-[60]"
+    @click.self="cancelAdmit()"
+    @keydown.escape.window="cancelAdmit()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admit-confirm-title"
+  >
+    <div class="confirm-modal" @click.stop>
+      <div class="flex items-start gap-4">
+        <span class="confirm-modal-icon" aria-hidden="true">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <h3 id="admit-confirm-title" class="text-lg font-semibold text-slate-900">
+            <span x-show="!alreadyAdmitted">Move to awaiting discharge?</span>
+            <span x-show="alreadyAdmitted" x-cloak>Update awaiting discharge?</span>
+          </h3>
+          <p class="mt-1 text-sm text-slate-600">
+            <strong class="text-slate-800" x-text="patientName"></strong>
+            <span class="text-slate-500" x-text="'(' + patientNumber + ')'"></span>
+          </p>
+          <p class="mt-2 text-sm text-slate-600" x-show="!alreadyAdmitted">
+            Consultation details will be saved and this patient will appear in
+            <em>Awaiting discharge</em> for bulk discharge when ready.
+          </p>
+          <p class="mt-2 text-sm text-slate-600" x-show="alreadyAdmitted" x-cloak>
+            Consultation details will be updated. The patient will remain in
+            <em>Awaiting discharge</em>.
+          </p>
+        </div>
+      </div>
+      <div class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+        <button
+          type="button"
+          class="w-full sm:w-auto px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 min-h-[44px]"
+          @click="cancelAdmit()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 min-h-[44px] shadow-sm"
+          @click="confirmAdmit()"
+        >
+          <span x-show="!alreadyAdmitted">Confirm move</span>
+          <span x-show="alreadyAdmitted" x-cloak>Confirm update</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

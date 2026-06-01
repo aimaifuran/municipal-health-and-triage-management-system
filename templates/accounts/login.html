@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login - {{ APP_NAME }}{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-teal-700 to-slate-800">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-teal-800">{{ APP_FULL_NAME }}</h1>
+      <p class="text-slate-500 mt-1">Secure municipal health portal</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-4 space-y-2" role="alert" id="login-alerts">
+      {% for message in messages %}
+      <div class="notify-alert px-4 py-3 rounded-lg text-sm flex items-start justify-between gap-2
+        {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
+        {% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200
+        {% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">
+        <span>{{ message }}</span>
+        <button type="button" class="text-current opacity-60 hover:opacity-100 shrink-0" aria-label="Dismiss"
+                onclick="this.closest('[role=alert]').remove()">×</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form
+      method="post"
+      action="{% url 'accounts:login' %}"
+      novalidate
+      class="space-y-5"
+      x-data="{ loading: false }"
+      @submit="loading = true"
+      :aria-busy="loading"
+    >
+      {% csrf_token %}
+      <div>
+        <label for="id_username" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <input
+          type="email"
+          name="username"
+          id="id_username"
+          class="form-input login-email-input"
+          placeholder="doctor@mhtms.gov.ph"
+          autocomplete="username"
+          required
+          spellcheck="false"
+        >
+      </div>
+      <div>
+        <label for="id_password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+        <input
+          type="password"
+          name="password"
+          id="id_password"
+          class="form-input"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+      <div class="hp-field" aria-hidden="true">
+        <label for="id_website">Leave blank</label>
+        <input type="text" name="website" id="id_website" tabindex="-1" autocomplete="off"
+               data-lpignore="true" data-1p-ignore="true" value="">
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2 min-h-[44px]"
+        :disabled="loading"
+      >
+        <template x-if="loading">
+          <span class="inline-flex items-center gap-2">
+            {% include "partials/loading_spinner.html" %}
+            <span>Signing in…</span>
+          </span>
+        </template>
+        <template x-if="!loading">
+          <span>Sign In</span>
+        </template>
+      </button>
+      <p x-show="loading" x-cloak class="text-center text-xs text-slate-500" role="status" aria-live="polite">
+        Verifying your credentials, please wait…
+      </p>
+    </form>
+    <!-- <p class="mt-4 text-center text-xs text-slate-400">
+      Demo: <span class="font-mono">doctor@mhtms.gov.ph</span> / <span class="font-mono">DemoPass123!</span>
+    </p> -->
+  </div>
+</div>
+{% endblock %}

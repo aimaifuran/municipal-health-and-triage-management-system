@@ -1,0 +1,67 @@
+{% load mhtms_tags %}
+{% if filter_oob %}
+{% include "dashboard/partials/table_filters.html" with table_filters=discharged_table_filters filter_form_id=filter_form_id show_severity_filter=True severity_before_actions=True search_placeholder="Patient ID or name" hx_post_url=discharged_partial_url hx_target="#discharged-container" reset_page_param="discharged_page" hx_swap_oob=True severity_choices=severity_choices %}
+{% endif %}
+<div class="overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-50 border-b border-slate-200">
+      <tr>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700">Patient ID</th>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700">Name</th>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700">Severity</th>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700">Priority</th>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700 hidden md:table-cell">Symptoms</th>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700 hidden lg:table-cell">Diagnosis</th>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700">Discharged</th>
+        <th class="px-3 py-2.5 text-left font-semibold text-slate-700">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for c in discharged_consultations %}
+      {% with triage=c.patient.triage_records.all.0 %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-3 py-2.5 font-medium text-slate-900 whitespace-nowrap">{{ c.patient.patient_number }}</td>
+        <td class="px-3 py-2.5 text-slate-800 whitespace-nowrap">{{ c.patient.full_name }}</td>
+        <td class="px-3 py-2.5 whitespace-nowrap">
+          {% if triage %}
+            {% severity_badge triage.severity_level %}
+          {% else %}
+            <span class="text-slate-400 text-xs">—</span>
+          {% endif %}
+        </td>
+        <td class="px-3 py-2.5 whitespace-nowrap">
+          {% if triage %}
+            <span class="font-semibold {% priority_color triage.priority_score %}">{{ triage.priority_score }}</span>
+          {% else %}
+            <span class="text-slate-400">—</span>
+          {% endif %}
+        </td>
+        <td class="px-3 py-2.5 text-slate-600 hidden md:table-cell max-w-[12rem] truncate" title="{% if triage %}{{ triage.symptoms }}{% endif %}">
+          {% if triage %}{{ triage.symptoms|truncatechars:50 }}{% else %}—{% endif %}
+        </td>
+        <td class="px-3 py-2.5 text-slate-600 hidden lg:table-cell max-w-[12rem] truncate" title="{{ c.diagnosis }}">
+          {{ c.diagnosis|truncatechars:50 }}
+        </td>
+        <td class="px-3 py-2.5 text-slate-600 whitespace-nowrap text-xs">
+          {% if c.discharged_at %}{{ c.discharged_at|date:"M j, Y g:i A" }}{% else %}—{% endif %}
+        </td>
+        <td class="px-3 py-2.5 whitespace-nowrap">
+          <button
+            type="button"
+            class="text-xs font-medium text-teal-700 hover:text-teal-900 hover:underline"
+            hx-get="{% url 'dashboard:doctor-discharged-detail' c.id %}"
+            hx-target="#discharged-patient-detail-modal"
+            hx-swap="innerHTML"
+          >View</button>
+        </td>
+      </tr>
+      {% endwith %}
+      {% empty %}
+      <tr>
+        <td colspan="8" class="px-3 py-10 text-center text-slate-500">No discharged patients yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "dashboard/partials/pagination.html" with page_obj=discharged_page page_param=page_param pagination_post_url=discharged_partial_url filter_form_id=filter_form_id hx_target="#discharged-container" %}

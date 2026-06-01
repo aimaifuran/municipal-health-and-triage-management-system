@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% load mhtms_tags %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <div class="rounded-2xl bg-gradient-to-br from-teal-800 via-teal-700 to-emerald-800 text-white p-6 md:p-8 shadow-lg">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <p class="text-teal-100 text-sm font-medium">System overview</p>
+        <h2 class="text-2xl md:text-3xl font-bold mt-1">Admin Dashboard</h2>
+        <p class="text-teal-100/90 text-sm mt-2 max-w-xl">
+          Municipal health triage across all clinics — live queue, severity mix, and staff coverage.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'dashboard:admin-clinics' %}" class="inline-flex items-center gap-2 rounded-lg bg-white/15 hover:bg-white/25 px-4 py-2 text-sm font-medium transition ring-1 ring-white/20">
+          Manage clinics
+        </a>
+        <a href="{% url 'dashboard:admin-staff' %}" class="inline-flex items-center gap-2 rounded-lg bg-white text-teal-900 hover:bg-teal-50 px-4 py-2 text-sm font-semibold transition shadow">
+          Manage staff
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+    <div class="admin-stat-card border-l-teal-500">
+      <p class="admin-stat-label">Active clinics</p>
+      <p class="admin-stat-value text-teal-700">{{ stats.clinic_count }}</p>
+    </div>
+    <div class="admin-stat-card border-l-orange-500">
+      <p class="admin-stat-label">In triage queue</p>
+      <p class="admin-stat-value text-orange-600">{{ stats.active_cases }}</p>
+    </div>
+    <div class="admin-stat-card border-l-red-500">
+      <p class="admin-stat-label">Critical</p>
+      <p class="admin-stat-value text-red-600">{{ stats.critical }}</p>
+    </div>
+    <div class="admin-stat-card border-l-yellow-500">
+      <p class="admin-stat-label">Moderate</p>
+      <p class="admin-stat-value text-yellow-600">{{ stats.moderate }}</p>
+    </div>
+    <div class="admin-stat-card border-l-green-500">
+      <p class="admin-stat-label">Stable</p>
+      <p class="admin-stat-value text-green-600">{{ stats.stable }}</p>
+    </div>
+    <div class="admin-stat-card border-l-violet-500 col-span-2 lg:col-span-1">
+      <p class="admin-stat-label">Staff · Patients</p>
+      <p class="admin-stat-value text-violet-700 text-xl">{{ stats.total_staff }} <span class="text-slate-400 font-normal">/</span> {{ stats.total_patients }}</p>
+    </div>
+  </div>
+
+  {% if stats.failed_logins_24h %}
+  <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <p class="text-sm text-amber-900">
+      <span class="font-semibold">{{ stats.failed_logins_24h }}</span> failed login attempt{{ stats.failed_logins_24h|pluralize }} in the last 24 hours.
+    </p>
+    <a href="{% url 'dashboard:admin-audit' %}" class="text-sm font-medium text-amber-800 hover:underline shrink-0">Review audit logs →</a>
+  </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+    <section class="admin-chart-card">
+      <h3 class="admin-chart-title">Severity distribution</h3>
+      <p class="admin-chart-subtitle">Active triage cases by priority level</p>
+      <div class="relative h-56 md:h-64 flex items-center justify-center">
+        <canvas id="chart-severity" aria-label="Severity distribution chart"></canvas>
+      </div>
+    </section>
+    <section class="admin-chart-card">
+      <h3 class="admin-chart-title">Staff by role</h3>
+      <p class="admin-chart-subtitle">Active accounts across the system</p>
+      <div class="relative h-56 md:h-64">
+        <canvas id="chart-staff" aria-label="Staff by role chart"></canvas>
+      </div>
+    </section>
+    <section class="admin-chart-card">
+      <h3 class="admin-chart-title">Queue by clinic</h3>
+      <p class="admin-chart-subtitle">Active triage cases per clinic (top 8)</p>
+      <div class="relative h-56 md:h-64">
+        <canvas id="chart-clinic" aria-label="Triage queue by clinic chart"></canvas>
+      </div>
+    </section>
+    <section class="admin-chart-card">
+      <h3 class="admin-chart-title">New patients (7 days)</h3>
+      <p class="admin-chart-subtitle">Registrations per day</p>
+      <div class="relative h-56 md:h-64">
+        <canvas id="chart-patients" aria-label="New patients chart"></canvas>
+      </div>
+    </section>
+    <section class="admin-chart-card lg:col-span-2">
+      <h3 class="admin-chart-title">Login activity (7 days)</h3>
+      <p class="admin-chart-subtitle">Successful vs failed authentication attempts</p>
+      <div class="relative h-52 md:h-56">
+        <canvas id="chart-logins" aria-label="Login activity chart"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <a href="{% url 'dashboard:admin-clinics' %}" class="admin-quick-card group">
+      <span class="admin-quick-icon bg-teal-100 text-teal-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+      </span>
+      <span>
+        <span class="font-semibold text-slate-900 group-hover:text-teal-800">Clinics</span>
+        <span class="block text-xs text-slate-500 mt-0.5">Add or edit facilities</span>
+      </span>
+    </a>
+    <a href="{% url 'dashboard:admin-staff' %}" class="admin-quick-card group">
+      <span class="admin-quick-icon bg-sky-100 text-sky-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </span>
+      <span>
+        <span class="font-semibold text-slate-900 group-hover:text-teal-800">Staff</span>
+        <span class="block text-xs text-slate-500 mt-0.5">Doctors, nurses, reception</span>
+      </span>
+    </a>
+    <a href="{% url 'dashboard:admin-audit' %}" class="admin-quick-card group">
+      <span class="admin-quick-icon bg-violet-100 text-violet-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      </span>
+      <span>
+        <span class="font-semibold text-slate-900 group-hover:text-teal-800">Audit logs</span>
+        <span class="block text-xs text-slate-500 mt-0.5">Security &amp; access events</span>
+      </span>
+    </a>
+    <a href="/api/v1/public/health-stats/" target="_blank" rel="noopener" class="admin-quick-card group">
+      <span class="admin-quick-icon bg-slate-100 text-slate-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </span>
+      <span>
+        <span class="font-semibold text-slate-900 group-hover:text-teal-800">Public API</span>
+        <span class="block text-xs text-slate-500 mt-0.5">Masked health stats</span>
+      </span>
+    </a>
+  </div>
+
+  <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 md:p-6">
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-900">System-wide triage queue</h2>
+        <p class="text-sm text-slate-500">Sorted by priority score — highest first</p>
+      </div>
+    </div>
+    {% include "dashboard/partials/queue_panel.html" with queue_page=queue_page can_edit_triage=False %}
+  </section>
+</div>
+
+{{ charts|json_script:"admin-charts-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  function initAdminCharts() {
+    if (typeof Chart === "undefined") return;
+    const el = document.getElementById("admin-charts-data");
+    if (!el) return;
+    const data = JSON.parse(el.textContent);
+
+    const font = { family: "ui-sans-serif, system-ui, sans-serif", size: 11 };
+    const gridColor = "rgba(148, 163, 184, 0.25)";
+
+    Chart.defaults.font = font;
+    Chart.defaults.color = "#64748b";
+
+    new Chart(document.getElementById("chart-severity"), {
+      type: "doughnut",
+      data: {
+        labels: data.severity.labels,
+        datasets: [{
+          data: data.severity.values,
+          backgroundColor: data.severity.colors,
+          borderWidth: 2,
+          borderColor: "#fff",
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+          legend: { position: "bottom" },
+        },
+      },
+    });
+
+    new Chart(document.getElementById("chart-staff"), {
+      type: "bar",
+      data: {
+        labels: data.staff.labels,
+        datasets: [{
+          label: "Staff",
+          data: data.staff.values,
+          backgroundColor: data.staff.colors,
+          borderRadius: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: gridColor } },
+          x: { grid: { display: false } },
+        },
+      },
+    });
+
+    const clinicLabels = data.clinic_triage.labels.length ? data.clinic_triage.labels : ["No data"];
+    const clinicValues = data.clinic_triage.values.length ? data.clinic_triage.values : [0];
+
+    new Chart(document.getElementById("chart-clinic"), {
+      type: "bar",
+      data: {
+        labels: clinicLabels,
+        datasets: [{
+          label: "Cases",
+          data: clinicValues,
+          backgroundColor: "rgba(13, 148, 136, 0.75)",
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: gridColor } },
+          y: { grid: { display: false } },
+        },
+      },
+    });
+
+    new Chart(document.getElementById("chart-patients"), {
+      type: "line",
+      data: {
+        labels: data.patients_daily.labels,
+        datasets: [{
+          label: "New patients",
+          data: data.patients_daily.values,
+          borderColor: "#0d9488",
+          backgroundColor: "rgba(13, 148, 136, 0.12)",
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointBackgroundColor: "#0d9488",
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: gridColor } },
+          x: { grid: { display: false } },
+        },
+      },
+    });
+
+    new Chart(document.getElementById("chart-logins"), {
+      type: "bar",
+      data: {
+        labels: data.logins_daily.labels,
+        datasets: [
+          {
+            label: "Successful",
+            data: data.logins_daily.success,
+            backgroundColor: "rgba(22, 163, 74, 0.8)",
+            borderRadius: 4,
+          },
+          {
+            label: "Failed",
+            data: data.logins_daily.failed,
+            backgroundColor: "rgba(220, 38, 38, 0.75)",
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom" } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: gridColor } },
+          x: { grid: { display: false } },
+        },
+      },
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAdminCharts);
+  } else {
+    initAdminCharts();
+  }
+})();
+</script>
+{% endblock %}

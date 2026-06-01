@@ -1,0 +1,57 @@
+<form method="post" action="{% url 'dashboard:admin-staff-save' %}" class="space-y-4">
+  {% csrf_token %}
+  {% if edit_staff %}
+  <input type="hidden" name="staff_id" value="{{ edit_staff.pk }}">
+  {% endif %}
+  <input type="hidden" name="role_filter" value="{{ role_filter }}">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div class="sm:col-span-2">
+      <label for="id_email" class="block text-sm font-medium text-slate-700 mb-1">{{ form.email.label }}</label>
+      {{ form.email }}
+      {% if edit_staff %}<p class="text-xs text-slate-500 mt-1">Email cannot be changed after creation.</p>{% endif %}
+      {% if form.email.errors %}<p class="text-xs text-red-600 mt-1">{{ form.email.errors.0 }}</p>{% endif %}
+    </div>
+    <div>
+      <label for="id_first_name" class="block text-sm font-medium text-slate-700 mb-1">{{ form.first_name.label }}</label>
+      {{ form.first_name }}
+      {% if form.first_name.errors %}<p class="text-xs text-red-600 mt-1">{{ form.first_name.errors.0 }}</p>{% endif %}
+    </div>
+    <div>
+      <label for="id_last_name" class="block text-sm font-medium text-slate-700 mb-1">{{ form.last_name.label }}</label>
+      {{ form.last_name }}
+      {% if form.last_name.errors %}<p class="text-xs text-red-600 mt-1">{{ form.last_name.errors.0 }}</p>{% endif %}
+    </div>
+    <div>
+      <label for="id_role" class="block text-sm font-medium text-slate-700 mb-1">{{ form.role.label }}</label>
+      {{ form.role }}
+      {% if form.role.errors %}<p class="text-xs text-red-600 mt-1">{{ form.role.errors.0 }}</p>{% endif %}
+    </div>
+    <div>
+      <label for="id_clinic" class="block text-sm font-medium text-slate-700 mb-1">{{ form.clinic.label }}</label>
+      {{ form.clinic }}
+      {% if form.clinic.errors %}<p class="text-xs text-red-600 mt-1">{{ form.clinic.errors.0 }}</p>{% endif %}
+    </div>
+    <div class="sm:col-span-2">
+      <label for="id_password" class="block text-sm font-medium text-slate-700 mb-1">
+        Password {% if edit_staff %}<span class="text-slate-400 font-normal">(optional)</span>{% endif %}
+      </label>
+      {{ form.password }}
+      {% if form.password.help_text %}<p class="text-xs text-slate-500 mt-1">{{ form.password.help_text }}</p>{% endif %}
+      {% if form.password.errors %}<p class="text-xs text-red-600 mt-1">{{ form.password.errors.0 }}</p>{% endif %}
+    </div>
+    <div class="flex items-center gap-2">
+      {{ form.is_active }}
+      <label for="id_is_active" class="text-sm text-slate-700">Active account</label>
+    </div>
+    <div class="flex items-center gap-2">
+      {{ form.is_verified }}
+      <label for="id_is_verified" class="text-sm text-slate-700">Verified (can sign in)</label>
+    </div>
+  </div>
+  {% if form.non_field_errors %}
+  <p class="text-sm text-red-600">{{ form.non_field_errors.0 }}</p>
+  {% endif %}
+  <button type="submit" class="bg-teal-700 text-white px-4 py-2 rounded-lg hover:bg-teal-800 text-sm font-medium">
+    {% if edit_staff %}Save staff account{% else %}Add staff account{% endif %}
+  </button>
+</form>

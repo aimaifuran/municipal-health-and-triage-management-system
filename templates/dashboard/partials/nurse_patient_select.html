@@ -1,0 +1,27 @@
+<label for="triage-patient-picker" class="block text-sm font-medium text-slate-700 mb-1">Patient</label>
+<select
+  id="triage-patient-picker"
+  name="patient"
+  class="form-input"
+  hx-get="{% url 'dashboard:nurse-triage-form' %}"
+  hx-target="#triage-workspace"
+  hx-swap="innerHTML"
+  hx-include="this"
+  hx-indicator="#triage-form-indicator"
+>
+  <option value="">— Select a patient —</option>
+  {% if awaiting_patients %}
+  <optgroup label="Awaiting triage">
+    {% for p in awaiting_patients %}
+    <option value="{{ p.id }}">{{ p.patient_number }} — {{ p.full_name }}</option>
+    {% endfor %}
+  </optgroup>
+  {% endif %}
+  {% if queue %}
+  <optgroup label="In queue (update vitals)">
+    {% for item in queue %}
+    <option value="{{ item.patient.id }}">{{ item.patient.patient_number }} — {{ item.patient.full_name }}</option>
+    {% endfor %}
+  </optgroup>
+  {% endif %}
+</select>
