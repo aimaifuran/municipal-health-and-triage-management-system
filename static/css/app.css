@@ -59,12 +59,12 @@
 }
 
 .htmx-indicator {
-  display: none;
+  display: none !important;
 }
 
 .htmx-request .htmx-indicator,
 .htmx-indicator.htmx-request {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 0.5rem;
 }
