@@ -213,6 +213,11 @@ body.htmx-request.htmx-settled #htmx-global-indicator {
   display: flex;
 }
 
+/* Bulk discharge confirms — above sidebar content and consultation modal */
+.confirm-modal-backdrop--stack {
+  z-index: 60;
+}
+
 .confirm-modal {
   width: 100%;
   max-width: 28rem;

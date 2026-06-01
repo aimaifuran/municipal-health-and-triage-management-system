@@ -1,17 +1,29 @@
 /**
- * Doctor dashboard — vanilla JS for discharge panel and consultation modal (HTMX-safe).
+ * Doctor dashboard — vanilla JS (event delegation + HTMX-safe).
  */
 (function () {
   "use strict";
 
-  function htmxAjaxPost(form) {
-    if (!form || typeof htmx === "undefined") return;
-    htmx.ajax("POST", form.getAttribute("hx-post"), {
-      source: form,
-      target: form.getAttribute("hx-target"),
-      swap: form.getAttribute("hx-swap") || "outerHTML",
-      indicator: form.getAttribute("hx-indicator"),
-    });
+  const READMIT_MODAL = () => document.querySelector('[data-modal="readmit-confirm"]');
+  const DISCHARGE_MODAL = () => document.querySelector('[data-modal="discharge-confirm"]');
+
+  function getDischargePanel() {
+    return document.getElementById("bulk-discharge-panel");
+  }
+
+  function htmxSubmitForm(form) {
+    if (!form) return false;
+    if (typeof htmx !== "undefined") {
+      htmx.ajax("POST", form.getAttribute("hx-post"), {
+        source: form,
+        target: form.getAttribute("hx-target"),
+        swap: form.getAttribute("hx-swap") || "outerHTML",
+        indicator: form.getAttribute("hx-indicator"),
+      });
+      return true;
+    }
+    form.requestSubmit();
+    return true;
   }
 
   function labelsFromChecked(checked) {
@@ -35,75 +47,113 @@
   function setModalOpen(modal, open) {
     if (!modal) return;
     modal.classList.toggle("is-open", open);
+    if (open) {
+      document.body.classList.add("overflow-hidden");
+    } else if (!READMIT_MODAL()?.classList.contains("is-open") && !DISCHARGE_MODAL()?.classList.contains("is-open")) {
+      document.body.classList.remove("overflow-hidden");
+    }
   }
 
-  function initBulkDischargePanel(panel) {
-    if (!panel || panel.dataset.doctorBound === "1") return;
-    panel.dataset.doctorBound = "1";
+  function openDischargeConfirm() {
+    const panel = getDischargePanel();
+    const form = panel?.querySelector('[data-ref="dischargeForm"]');
+    const alert = panel?.querySelector('[data-alert="no-selection"]');
+    const modal = DISCHARGE_MODAL();
+    if (!form || !modal) return;
 
-    const readmitForm = panel.querySelector('[data-ref="readmitForm"]');
-    const dischargeForm = panel.querySelector('[data-ref="dischargeForm"]');
-    const noReadmitAlert = panel.querySelector('[data-alert="no-readmit"]');
-    const noSelectionAlert = panel.querySelector('[data-alert="no-selection"]');
-    const readmitModal = panel.querySelector('[data-modal="readmit-confirm"]');
-    const dischargeModal = panel.querySelector('[data-modal="discharge-confirm"]');
+    const checked = form.querySelectorAll('input[name="consultation_ids"]:checked');
+    if (!checked.length) {
+      alert?.classList.remove("hidden");
+      return;
+    }
+    alert?.classList.add("hidden");
 
-    panel.querySelector('[data-action="readmit-open"]')?.addEventListener("click", () => {
-      const checked =
-        readmitForm?.querySelectorAll('input[name="readmit_consultation_ids"]:checked') || [];
-      if (!checked.length) {
-        noReadmitAlert?.classList.remove("hidden");
-        return;
-      }
-      noReadmitAlert?.classList.add("hidden");
-      const names = labelsFromChecked(checked);
-      const count = String(names.length);
-      readmitModal?.querySelectorAll("[data-readmit-count]").forEach((el) => {
-        el.textContent = count;
-      });
-      populatePatientList(readmitModal?.querySelector("[data-patient-list]"), names);
-      setModalOpen(dischargeModal, false);
-      setModalOpen(readmitModal, true);
+    const names = labelsFromChecked(checked);
+    const count = String(names.length);
+    modal.querySelectorAll("[data-discharge-count]").forEach((el) => {
+      el.textContent = count;
     });
+    populatePatientList(modal.querySelector("[data-patient-list]"), names);
+    setModalOpen(READMIT_MODAL(), false);
+    setModalOpen(modal, true);
+  }
 
-    panel.querySelector('[data-action="discharge-open"]')?.addEventListener("click", () => {
-      const checked = dischargeForm?.querySelectorAll('input[name="consultation_ids"]:checked') || [];
-      if (!checked.length) {
-        noSelectionAlert?.classList.remove("hidden");
-        return;
-      }
-      noSelectionAlert?.classList.add("hidden");
-      const names = labelsFromChecked(checked);
-      const count = String(names.length);
-      dischargeModal?.querySelectorAll("[data-discharge-count]").forEach((el) => {
-        el.textContent = count;
-      });
-      populatePatientList(dischargeModal?.querySelector("[data-patient-list]"), names);
-      setModalOpen(readmitModal, false);
-      setModalOpen(dischargeModal, true);
-    });
+  function openReadmitConfirm() {
+    const panel = getDischargePanel();
+    const form = panel?.querySelector('[data-ref="readmitForm"]');
+    const alert = panel?.querySelector('[data-alert="no-readmit"]');
+    const modal = READMIT_MODAL();
+    if (!form || !modal) return;
 
-    readmitModal?.querySelector('[data-action="readmit-cancel"]')?.addEventListener("click", () => {
-      setModalOpen(readmitModal, false);
-    });
-    readmitModal?.querySelector('[data-action="readmit-confirm"]')?.addEventListener("click", () => {
-      setModalOpen(readmitModal, false);
-      htmxAjaxPost(readmitForm);
-    });
-    readmitModal?.addEventListener("click", (event) => {
-      if (event.target === readmitModal) setModalOpen(readmitModal, false);
-    });
+    const checked = form.querySelectorAll('input[name="readmit_consultation_ids"]:checked');
+    if (!checked.length) {
+      alert?.classList.remove("hidden");
+      return;
+    }
+    alert?.classList.add("hidden");
 
-    dischargeModal?.querySelector('[data-action="discharge-cancel"]')?.addEventListener("click", () => {
-      setModalOpen(dischargeModal, false);
+    const names = labelsFromChecked(checked);
+    const count = String(names.length);
+    modal.querySelectorAll("[data-readmit-count]").forEach((el) => {
+      el.textContent = count;
     });
-    dischargeModal?.querySelector('[data-action="discharge-confirm"]')?.addEventListener("click", () => {
-      setModalOpen(dischargeModal, false);
-      htmxAjaxPost(dischargeForm);
-    });
-    dischargeModal?.addEventListener("click", (event) => {
-      if (event.target === dischargeModal) setModalOpen(dischargeModal, false);
-    });
+    populatePatientList(modal.querySelector("[data-patient-list]"), names);
+    setModalOpen(DISCHARGE_MODAL(), false);
+    setModalOpen(modal, true);
+  }
+
+  function handleBulkDischargeClick(event) {
+    const target = event.target.closest("[data-action]");
+    if (!target) return;
+
+    const action = target.getAttribute("data-action");
+
+    if (action === "discharge-open") {
+      event.preventDefault();
+      openDischargeConfirm();
+      return;
+    }
+
+    if (action === "readmit-open") {
+      event.preventDefault();
+      openReadmitConfirm();
+      return;
+    }
+
+    if (action === "discharge-cancel") {
+      event.preventDefault();
+      setModalOpen(DISCHARGE_MODAL(), false);
+      return;
+    }
+
+    if (action === "readmit-cancel") {
+      event.preventDefault();
+      setModalOpen(READMIT_MODAL(), false);
+      return;
+    }
+
+    if (action === "discharge-confirm") {
+      event.preventDefault();
+      const form = getDischargePanel()?.querySelector('[data-ref="dischargeForm"]');
+      setModalOpen(DISCHARGE_MODAL(), false);
+      htmxSubmitForm(form);
+      return;
+    }
+
+    if (action === "readmit-confirm") {
+      event.preventDefault();
+      const form = getDischargePanel()?.querySelector('[data-ref="readmitForm"]');
+      setModalOpen(READMIT_MODAL(), false);
+      htmxSubmitForm(form);
+    }
+  }
+
+  function handleBulkDischargeBackdropClick(event) {
+    const modal = event.target.closest("[data-modal]");
+    if (!modal || event.target !== modal) return;
+    if (modal.dataset.modal === "discharge-confirm" || modal.dataset.modal === "readmit-confirm") {
+      setModalOpen(modal, false);
+    }
   }
 
   function closeConsultationModal() {
@@ -123,8 +173,8 @@
   }
 
   function showConsultMessage(backdrop, type, message) {
-    const errorEl = backdrop.querySelector('[data-consult-ai-error]');
-    const disclaimerEl = backdrop.querySelector('[data-consult-ai-disclaimer]');
+    const errorEl = backdrop.querySelector("[data-consult-ai-error]");
+    const disclaimerEl = backdrop.querySelector("[data-consult-ai-disclaimer]");
     if (type === "error") {
       if (errorEl) {
         errorEl.textContent = message;
@@ -248,29 +298,10 @@
     admitModal?.addEventListener("click", (event) => {
       if (event.target === admitModal) setModalOpen(admitModal, false);
     });
-
-    document.addEventListener("keydown", function onEscape(event) {
-      if (event.key !== "Escape" || !document.body.contains(backdrop)) {
-        document.removeEventListener("keydown", onEscape);
-        return;
-      }
-      if (admitModal?.classList.contains("is-open")) {
-        setModalOpen(admitModal, false);
-        return;
-      }
-      closeConsultationModal();
-      document.removeEventListener("keydown", onEscape);
-    });
   }
 
   function initDoctorDashboard(root) {
     if (!root) return;
-
-    if (root.id === "bulk-discharge-panel") {
-      initBulkDischargePanel(root);
-    } else {
-      root.querySelectorAll("#bulk-discharge-panel").forEach(initBulkDischargePanel);
-    }
 
     if (root.id === "doctor-consultation-modal") {
       const backdrop = root.querySelector("[data-consultation-modal]");
@@ -280,10 +311,42 @@
       const host = root.querySelector?.("#doctor-consultation-modal");
       host?.querySelectorAll("[data-consultation-modal]").forEach(initConsultationModal);
     }
+
+    const panel = root.id === "bulk-discharge-panel" ? root : root.querySelector?.("#bulk-discharge-panel");
+    if (panel && typeof htmx !== "undefined") {
+      htmx.process(panel);
+    }
   }
 
-  document.addEventListener("DOMContentLoaded", () => initDoctorDashboard(document));
+  function onKeydown(event) {
+    if (event.key !== "Escape") return;
+    if (DISCHARGE_MODAL()?.classList.contains("is-open")) {
+      setModalOpen(DISCHARGE_MODAL(), false);
+      return;
+    }
+    if (READMIT_MODAL()?.classList.contains("is-open")) {
+      setModalOpen(READMIT_MODAL(), false);
+    }
+  }
+
+  function boot() {
+    document.addEventListener("click", handleBulkDischargeClick);
+    document.addEventListener("click", handleBulkDischargeBackdropClick);
+    document.addEventListener("keydown", onKeydown);
+    initDoctorDashboard(document);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
   document.body.addEventListener("htmx:afterSwap", (event) => {
+    initDoctorDashboard(event.detail.target);
+  });
+
+  document.body.addEventListener("htmx:afterSettle", (event) => {
     initDoctorDashboard(event.detail.target);
   });
 })();
