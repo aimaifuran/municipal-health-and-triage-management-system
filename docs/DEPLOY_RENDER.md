@@ -158,9 +158,10 @@ Use this if you prefer creating services one by one.
 | Region | Singapore |
 | Branch | `main` |
 | Runtime | **Python 3** |
-| Build Command | `./build.sh` |
-| Pre-Deploy Command | `python manage.py migrate --noinput` |
+| Build Command | `./build.sh` (installs deps, runs migrations, collectstatic) |
 | Start Command | `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120` |
+
+> **Free tier:** `preDeployCommand` is not supported. Migrations run inside `build.sh` instead.
 | Health Check Path | `/health/` |
 
 4. **Environment** — add all variables from Part A Step 2, plus:
@@ -279,6 +280,10 @@ python manage.py createsuperuser
 
 - Set `OPENAI_API_KEY` in environment
 - Linux servers usually do not need the Windows SSL workaround; if errors persist, check OpenAI billing and logs
+
+### Blueprint: `pre-deploy command is not supported for free tier`
+
+Remove `preDeployCommand` from `render.yaml`. This project runs migrations in `build.sh` instead (already configured on `main`).
 
 ### Blueprint: `services[1] must specify IP allow list`
 
