@@ -180,18 +180,30 @@ Use this if you prefer creating services one by one.
 
 ---
 
-## Part C — Load demo data (first login)
+## Part C — Load demo data (required for login)
+
+**Migrations only create empty tables.** They do **not** create `admin@mhtms.gov.ph` or other demo users.
+
+If login says *"Invalid email or password"*, the database is migrated but **not seeded** — run the command below.
 
 Render does not run `seed_demo` automatically. After the first successful deploy:
 
-### Option 1: Render Shell (dashboard)
+### Option 1: Render Shell (dashboard) — do this first
 
-1. **mhtms-web** → **Shell**
-2. Run:
+1. Open Blueprint **mhtms** → service **mhtms-web**
+2. Confirm deploy status is **Live** (not Building/Failed)
+3. Click **Shell** (top right)
+4. Run:
 
 ```bash
 python manage.py seed_demo
 ```
+
+You should see lines like `Created user admin@mhtms.gov.ph` and `=== Sample data ready ===`.
+
+5. Try login again at `/accounts/login/`
+
+**If Shell is not available on your plan**, use Option 2 below.
 
 ### Option 2: One-off job (if Shell unavailable on your plan)
 
@@ -256,7 +268,17 @@ python manage.py createsuperuser
 ### Deploy fails at `migrate`
 
 - Confirm `DATABASE_URL` is set and Postgres is **available** (same region)
-- Check pre-deploy logs for SQL errors
+- Check **build logs** for SQL errors (migrations run in `build.sh` on free tier)
+
+### Login always fails ("Invalid email or password")
+
+1. Run `python manage.py seed_demo` in **mhtms-web** → **Shell** (see Part C)
+2. Or create an admin manually: `python manage.py createsuperuser`
+3. If you tried many times, unlock axes in Shell:
+
+```bash
+python manage.py unlock_login --all
+```
 
 ### `DisallowedHost` in browser
 
