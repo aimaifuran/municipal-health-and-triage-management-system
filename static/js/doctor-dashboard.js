@@ -117,34 +117,6 @@
     if (action === "readmit-open") {
       event.preventDefault();
       openReadmitConfirm();
-      return;
-    }
-
-    if (action === "discharge-cancel") {
-      event.preventDefault();
-      setModalOpen(DISCHARGE_MODAL(), false);
-      return;
-    }
-
-    if (action === "readmit-cancel") {
-      event.preventDefault();
-      setModalOpen(READMIT_MODAL(), false);
-      return;
-    }
-
-    if (action === "discharge-confirm") {
-      event.preventDefault();
-      const form = getDischargePanel()?.querySelector('[data-ref="dischargeForm"]');
-      setModalOpen(DISCHARGE_MODAL(), false);
-      htmxSubmitForm(form);
-      return;
-    }
-
-    if (action === "readmit-confirm") {
-      event.preventDefault();
-      const form = getDischargePanel()?.querySelector('[data-ref="readmitForm"]');
-      setModalOpen(READMIT_MODAL(), false);
-      htmxSubmitForm(form);
     }
   }
 
@@ -329,10 +301,45 @@
     }
   }
 
+  function bindBulkDischargeModalButtons() {
+    const pairs = [
+      [DISCHARGE_MODAL(), "discharge-cancel", () => setModalOpen(DISCHARGE_MODAL(), false)],
+      [
+        DISCHARGE_MODAL(),
+        "discharge-confirm",
+        () => {
+          const form = getDischargePanel()?.querySelector('[data-ref="dischargeForm"]');
+          setModalOpen(DISCHARGE_MODAL(), false);
+          htmxSubmitForm(form);
+        },
+      ],
+      [READMIT_MODAL(), "readmit-cancel", () => setModalOpen(READMIT_MODAL(), false)],
+      [
+        READMIT_MODAL(),
+        "readmit-confirm",
+        () => {
+          const form = getDischargePanel()?.querySelector('[data-ref="readmitForm"]');
+          setModalOpen(READMIT_MODAL(), false);
+          htmxSubmitForm(form);
+        },
+      ],
+    ];
+    pairs.forEach(([modal, action, handler]) => {
+      const btn = modal?.querySelector(`[data-action="${action}"]`);
+      if (!btn || btn.dataset.doctorBound === "1") return;
+      btn.dataset.doctorBound = "1";
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        handler();
+      });
+    });
+  }
+
   function boot() {
     document.addEventListener("click", handleBulkDischargeClick);
     document.addEventListener("click", handleBulkDischargeBackdropClick);
     document.addEventListener("keydown", onKeydown);
+    bindBulkDischargeModalButtons();
     initDoctorDashboard(document);
   }
 
