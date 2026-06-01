@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Discharge Summary — {{ patient.full_name }}</title>
+  <style>
+    @page { size: letter; margin: 0.6in; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #0f172a;
+      max-width: 7.5in;
+      margin: 0 auto;
+      padding: 0.5rem;
+    }
+    .header { text-align: center; border-bottom: 2px solid #0f4c81; padding-bottom: 12px; margin-bottom: 16px; }
+    .header .gov { font-size: 9pt; color: #475569; margin: 0; }
+    .header h1 { font-size: 14pt; margin: 8px 0 4px; color: #0f4c81; }
+    .header .clinic { font-size: 13pt; font-weight: 700; margin: 4px 0; }
+    .header .addr { font-size: 9pt; color: #475569; margin: 0; }
+    .doc-title { text-align: center; font-size: 12pt; font-weight: 700; letter-spacing: 0.04em; margin: 12px 0 4px; }
+    .doc-ref { text-align: center; font-size: 9pt; color: #475569; margin-bottom: 16px; }
+    h2 {
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #0f4c81;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin: 18px 0 8px;
+    }
+    table.info { width: 100%; border-collapse: collapse; font-size: 10pt; }
+    table.info th, table.info td {
+      text-align: left;
+      vertical-align: top;
+      padding: 5px 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    table.info th { width: 32%; color: #475569; font-weight: 600; }
+    .block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      font-size: 10pt;
+      margin-top: 4px;
+    }
+    .signature {
+      margin-top: 36px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .signature .line {
+      border-top: 1px solid #0f172a;
+      padding-top: 6px;
+      text-align: center;
+      font-size: 10pt;
+    }
+    .footer {
+      margin-top: 24px;
+      font-size: 8pt;
+      color: #64748b;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+    .no-print {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .no-print button {
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      cursor: pointer;
+    }
+    .no-print button.primary {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button type="button" class="primary" onclick="window.print()">Print</button>
+    <button type="button" onclick="window.close()">Close</button>
+  </div>
+
+  <header class="header">
+    <p class="gov">Republic of the Philippines · Department of Health</p>
+    <p class="clinic">{{ patient.clinic.name }}</p>
+    <p class="addr">{{ patient.clinic.address }}, {{ patient.clinic.municipality }}, {{ patient.clinic.region }}</p>
+  </header>
+
+  <p class="doc-title">OUTPATIENT DISCHARGE SUMMARY</p>
+  <p class="doc-ref">Document Ref. No.: <strong>{{ document_ref }}</strong></p>
+
+  <h2>I. Patient Information</h2>
+  <table class="info">
+    <tr><th>Full name</th><td>{{ patient.full_name }}</td></tr>
+    <tr><th>Patient ID</th><td>{{ patient.patient_number }}</td></tr>
+    <tr><th>Date of birth</th><td>{{ patient.birth_date|date:"F j, Y" }} ({{ patient_age }} years)</td></tr>
+    <tr><th>Sex</th><td>{{ patient.get_gender_display }}</td></tr>
+    <tr><th>Contact number</th><td>{{ patient.contact_number }}</td></tr>
+    <tr><th>Emergency contact</th><td>{{ patient.emergency_contact }}</td></tr>
+    <tr><th>Address</th><td>{{ patient.address }}</td></tr>
+  </table>
+
+  {% if triage %}
+  <h2>II. Triage &amp; Vital Signs</h2>
+  <table class="info">
+    <tr><th>Date / time of triage</th><td>{{ triage.created_at|date:"F j, Y g:i A" }}</td></tr>
+    <tr><th>Severity</th><td>{{ triage.get_severity_level_display }}</td></tr>
+    <tr><th>Blood pressure</th><td>{{ triage.blood_pressure }}</td></tr>
+    <tr><th>Heart rate</th><td>{{ triage.heart_rate }} bpm</td></tr>
+    <tr><th>Respiratory rate</th><td>{{ triage.respiratory_rate }} /min</td></tr>
+    <tr><th>SpO₂</th><td>{{ triage.oxygen_saturation }}%</td></tr>
+    <tr><th>Temperature</th><td>{{ triage.body_temperature }} °C</td></tr>
+    <tr><th>Chief complaint / symptoms</th><td>{{ triage.symptoms }}</td></tr>
+  </table>
+  {% endif %}
+
+  <h2>{% if triage %}III{% else %}II{% endif %}. Clinical Record &amp; Disposition</h2>
+  <table class="info">
+    <tr><th>Attending physician</th><td>{{ consultation.doctor.full_name }}</td></tr>
+    <tr><th>Date / time admitted</th><td>{% if consultation.admitted_at %}{{ consultation.admitted_at|date:"F j, Y g:i A" }}{% else %}—{% endif %}</td></tr>
+    <tr><th>Date / time discharged</th><td>{% if consultation.discharged_at %}{{ consultation.discharged_at|date:"F j, Y g:i A" }}{% else %}—{% endif %}</td></tr>
+    <tr><th>Disposition</th><td>Discharged — fit for release from municipal health facility care</td></tr>
+  </table>
+
+  <h2>Diagnosis / Clinical impression</h2>
+  <div class="block">{{ consultation.diagnosis }}</div>
+
+  <h2>Treatment / Procedures rendered</h2>
+  <div class="block">{{ consultation.treatment }}</div>
+
+  {% if consultation.prescription %}
+  <h2>Medications prescribed</h2>
+  <div class="block">{{ consultation.prescription }}</div>
+  {% endif %}
+
+  {% if consultation.consultation_notes %}
+  <h2>Additional notes</h2>
+  <div class="block">{{ consultation.consultation_notes }}</div>
+  {% endif %}
+
+  <div class="signature">
+    <div>
+      <div class="line">
+        <strong>{{ consultation.doctor.full_name }}</strong><br>
+        Attending Physician
+      </div>
+    </div>
+    <div>
+      <div class="line">
+        {% if consultation.discharged_at %}{{ consultation.discharged_at|date:"F j, Y" }}{% else %}_______________{% endif %}<br>
+        Date signed
+      </div>
+    </div>
+  </div>
+
+  <p class="footer">
+    This document summarizes care provided at the municipal health facility listed above.
+    The patient should follow prescribed medications and return immediately if symptoms worsen.
+    Generated by MHTMS on {{ generated_at|date:"F j, Y g:i A" }}.
+  </p>
+
+  <script>
+    window.addEventListener("load", function () {
+      if (window.matchMedia && window.matchMedia("print").matches) return;
+      setTimeout(function () { window.print(); }, 300);
+    });
+  </script>
+</body>
+</html>

@@ -73,19 +73,19 @@ python manage.py seed_demo
 python manage.py seed_demo --reset
 ```
 
-Includes **3 clinics** (Cebu, Mandaue, Lapu-Lapu), **7 staff accounts**, **11 patients**, active **triage queues** (critical/moderate/stable), and **consultations** (some admitted for bulk-discharge testing).
+Includes **3 clinics** (Carigara, Barugo, Capoocan — Region VIII), **7 staff accounts**, **11 patients**, active **triage queues** (critical/moderate/stable), and **consultations** (some admitted for bulk-discharge testing).
 
 ### Demo Accounts
 
 | Email | Role | Password |
 |-------|------|----------|
 | admin@mhtms.gov.ph | Super Admin | DemoPass123! |
-| doctor@mhtms.gov.ph | Doctor (Cebu) | DemoPass123! |
-| doctor2@mhtms.gov.ph | Doctor (Mandaue) | DemoPass123! |
-| nurse@mhtms.gov.ph | Nurse (Cebu) | DemoPass123! |
-| nurse2@mhtms.gov.ph | Nurse (Mandaue) | DemoPass123! |
+| doctor@mhtms.gov.ph | Doctor (Carigara) | DemoPass123! |
+| doctor2@mhtms.gov.ph | Doctor (Barugo) | DemoPass123! |
+| nurse@mhtms.gov.ph | Nurse (Carigara) | DemoPass123! |
+| nurse2@mhtms.gov.ph | Nurse (Barugo) | DemoPass123! |
 | reception@mhtms.gov.ph | Receptionist | DemoPass123! |
-| reception2@mhtms.gov.ph | Receptionist (Mandaue) | DemoPass123! |
+| reception2@mhtms.gov.ph | Receptionist (Barugo) | DemoPass123! |
 
 ## Environment Variables
 
@@ -98,6 +98,7 @@ See [`.env.example`](.env.example) for all variables. **Never commit `.env` to v
 | `REDIS_URL` | Redis cache/broker |
 | `CLOUDINARY_*` | Media storage |
 | `DEBUG` | Must be `False` in production |
+| `OPENAI_API_KEY` | Consult AI on doctor queue ([setup guide](docs/CONSULT_AI_SETUP.md)) |
 
 ## API Documentation
 

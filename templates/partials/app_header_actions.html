@@ -9,13 +9,11 @@
   <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset {{ user.role|role_badge_class }}">
     {{ user.get_role_display }}
   </span>
-  <div class="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-200">
-    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-teal-700 text-xs font-bold text-white">
-      {{ user|user_initials }}
-    </span>
+  <a href="{% url 'accounts:profile' %}" class="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-200 rounded-lg hover:bg-slate-50 transition py-1 pr-1" title="My profile">
+    {% user_avatar user size="sm" %}
     <div class="hidden lg:block max-w-[11rem]">
       <p class="text-sm font-medium text-slate-800 truncate">{{ user.full_name|default:user.email }}</p>
       <p class="text-xs text-slate-500 truncate">{{ user.email }}</p>
     </div>
-  </div>
+  </a>
 </div>

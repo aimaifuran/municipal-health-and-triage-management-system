@@ -1,0 +1,14 @@
+{% if picture_url %}
+<img
+  src="{{ picture_url }}"
+  alt=""
+  class="{{ dim_class }} shrink-0 rounded-full object-cover ring-2 ring-white/20 bg-slate-100"
+  width="80"
+  height="80"
+  loading="lazy"
+/>
+{% else %}
+<span class="{{ dim_class }} shrink-0 inline-flex items-center justify-center rounded-full bg-teal-700 {{ text_class }} font-bold text-white ring-2 ring-white/20">
+  {{ initials }}
+</span>
+{% endif %}

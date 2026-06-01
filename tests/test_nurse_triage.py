@@ -1,6 +1,8 @@
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
+from consultations.models import Consultation
 from triage.models import TriageRecord
 
 
@@ -12,6 +14,20 @@ class TestNurseTriageDashboard:
         assert response.status_code == 200
         assert b"Record Vitals" in response.content
         assert b"Awaiting triage" in response.content or b"Select a patient" in response.content
+
+    def test_nurse_dashboard_shows_discharged_patients(self, client, nurse, doctor, patient):
+        client.force_login(nurse)
+        Consultation.objects.create(
+            patient=patient,
+            doctor=doctor,
+            admitted=True,
+            discharged=True,
+            discharged_at=timezone.now(),
+        )
+        response = client.get(reverse("dashboard:home"))
+        assert response.status_code == 200
+        assert b"Discharged Patients" in response.content
+        assert patient.patient_number.encode() in response.content
 
     def test_nurse_can_create_triage(self, client, nurse, patient):
         client.force_login(nurse)

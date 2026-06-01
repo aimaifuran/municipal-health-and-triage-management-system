@@ -1,9 +1,10 @@
 """Account forms with honeypot protection."""
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 
 from accounts.models import Clinic, UserRole
+from accounts.profile_storage import validate_profile_image
 from accounts.services import STAFF_ROLES
 from security.honeypot import HoneypotMixin
 
@@ -125,3 +126,54 @@ class LoginForm(HoneypotMixin, AuthenticationForm):
         super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs.setdefault("name", "username")
         self.add_honeypot()
+
+
+class ProfileDetailsForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email")
+        widgets = {
+            "first_name": forms.TextInput(attrs={**INPUT, "autocomplete": "given-name"}),
+            "last_name": forms.TextInput(attrs={**INPUT, "autocomplete": "family-name"}),
+            "email": forms.EmailInput(attrs={**INPUT, "autocomplete": "email"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["first_name"].required = True
+        self.fields["last_name"].required = True
+
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        if not email:
+            raise forms.ValidationError("Email is required.")
+        qs = User.objects.filter(email__iexact=email)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("A user with this email already exists.")
+        return email
+
+
+class ProfilePasswordForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ("old_password", "new_password1", "new_password2"):
+            self.fields[name].widget.attrs["class"] = "form-input"
+
+
+class ProfilePictureForm(forms.Form):
+    picture = forms.ImageField(
+        required=True,
+        widget=forms.ClearableFileInput(
+            attrs={
+                "class": "block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100",
+                "accept": "image/jpeg,image/png,image/webp",
+            }
+        ),
+    )
+
+    def clean_picture(self):
+        picture = self.cleaned_data["picture"]
+        validate_profile_image(picture)
+        return picture

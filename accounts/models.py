@@ -80,6 +80,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
     failed_login_attempts = models.PositiveIntegerField(default=0)
+    profile_picture_url = models.URLField(max_length=500, blank=True)
+    profile_picture_public_id = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

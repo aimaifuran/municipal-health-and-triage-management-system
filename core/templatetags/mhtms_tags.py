@@ -81,6 +81,25 @@ def nav_active(context, *url_names: str) -> str:
     return ""
 
 
+@register.inclusion_tag("partials/user_avatar.html")
+def user_avatar(user, size: str = "md"):
+  """Render profile picture or initials fallback."""
+  sizes = {
+      "sm": ("h-9 w-9", "text-xs"),
+      "md": ("h-10 w-10", "text-sm"),
+      "lg": ("h-20 w-20", "text-xl"),
+      "xl": ("h-28 w-28", "text-2xl"),
+  }
+  dim_class, text_class = sizes.get(size, sizes["md"])
+  return {
+      "user": user,
+      "dim_class": dim_class,
+      "text_class": text_class,
+      "picture_url": getattr(user, "profile_picture_url", "") or "",
+      "initials": user_initials(user),
+  }
+
+
 @register.filter
 def user_initials(user) -> str:
     first = (getattr(user, "first_name", "") or "").strip()

@@ -65,12 +65,69 @@
       showAdmitConfirm: false,
       patientName: "",
       patientNumber: "",
+      patientId: "",
+      aiUrl: "",
       alreadyAdmitted: false,
+      consultAiLoading: false,
+      consultAiError: "",
+      consultAiDisclaimer: "",
 
       initFromDataset() {
         this.patientName = this.$el.dataset.patientName || "";
         this.patientNumber = this.$el.dataset.patientNumber || "";
+        this.patientId = this.$el.dataset.patientId || "";
+        this.aiUrl = this.$el.dataset.aiUrl || "";
         this.alreadyAdmitted = this.$el.dataset.alreadyAdmitted === "true";
+      },
+
+      _setFieldValue(name, value) {
+        const form = this.$refs.consultForm;
+        if (!form) return;
+        const field = form.querySelector(`[name="${name}"]`);
+        if (field) field.value = value || "";
+      },
+
+      async requestConsultAI() {
+        if (this.consultAiLoading || !this.patientId || !this.aiUrl) return;
+        const form = this.$refs.consultForm;
+        const csrf = form?.querySelector('[name="csrfmiddlewaretoken"]')?.value;
+        if (!csrf) {
+          this.consultAiError = "Security token missing. Refresh the page and try again.";
+          return;
+        }
+        this.consultAiLoading = true;
+        this.consultAiError = "";
+        try {
+          const body = new URLSearchParams();
+          body.set("patient_id", this.patientId);
+          body.set("csrfmiddlewaretoken", csrf);
+          const response = await fetch(this.aiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-CSRFToken": csrf,
+              "HX-Request": "true",
+            },
+            body: body.toString(),
+            credentials: "same-origin",
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            this.consultAiError = data.error || "Could not generate AI consultation draft.";
+            return;
+          }
+          this._setFieldValue("diagnosis", data.diagnosis);
+          this._setFieldValue("treatment", data.treatment);
+          this._setFieldValue("prescription", data.prescription);
+          this._setFieldValue("consultation_notes", data.consultation_notes);
+          this.consultAiDisclaimer =
+            data.disclaimer ||
+            "Review and edit all fields before saving. You remain responsible for the medical record.";
+        } catch (err) {
+          this.consultAiError = "Network error. Check your connection and try again.";
+        } finally {
+          this.consultAiLoading = false;
+        }
       },
 
       _submitConsultForm(action) {

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load mhtms_tags %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+  <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 md:p-8">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+      <div class="shrink-0 flex justify-center sm:justify-start">
+        {% user_avatar user size="xl" %}
+      </div>
+      <div class="min-w-0 text-center sm:text-left">
+        <h2 class="text-xl font-bold text-slate-900">{{ user.full_name }}</h2>
+        <p class="text-sm text-slate-600 mt-0.5">{{ user.email }}</p>
+        <p class="mt-2">
+          <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full ring-1 ring-inset {{ user.role|role_badge_class }}">
+            {{ user.get_role_display }}
+          </span>
+        </p>
+        {% if user.clinic %}
+        <p class="text-sm text-slate-500 mt-2">{{ user.clinic.name }}</p>
+        {% endif %}
+        <p class="text-xs text-slate-400 mt-1">Member since {{ user.created_at|date:"F j, Y" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+    <h3 class="text-base font-semibold text-slate-900 mb-1">Profile picture</h3>
+    <p class="text-sm text-slate-600 mb-4">JPEG, PNG, or WebP — max 5MB. Stored securely on Cloudinary.</p>
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="picture">
+      {{ picture_form.picture }}
+      {% if picture_form.picture.errors %}
+      <p class="text-xs text-red-600">{{ picture_form.picture.errors.0 }}</p>
+      {% endif %}
+      <div class="flex flex-wrap gap-2">
+        <button type="submit" class="px-4 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 min-h-[44px]">
+          Upload photo
+        </button>
+        {% if user.profile_picture_url %}
+        <button
+          type="submit"
+          formaction="{% url 'accounts:profile' %}"
+          name="action"
+          value="remove_picture"
+          class="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 min-h-[44px]"
+          onclick="return confirm('Remove your profile picture?');"
+        >
+          Remove photo
+        </button>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+
+  <section class="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+    <h3 class="text-base font-semibold text-slate-900 mb-1">Account details</h3>
+    <p class="text-sm text-slate-600 mb-4">Update your name and sign-in email.</p>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="details">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="id_first_name" class="block text-sm font-medium text-slate-700 mb-1">First name</label>
+          {{ details_form.first_name }}
+          {% if details_form.first_name.errors %}<p class="text-xs text-red-600 mt-1">{{ details_form.first_name.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label for="id_last_name" class="block text-sm font-medium text-slate-700 mb-1">Last name</label>
+          {{ details_form.last_name }}
+          {% if details_form.last_name.errors %}<p class="text-xs text-red-600 mt-1">{{ details_form.last_name.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+      <div>
+        <label for="id_email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        {{ details_form.email }}
+        {% if details_form.email.errors %}<p class="text-xs text-red-600 mt-1">{{ details_form.email.errors.0 }}</p>{% endif %}
+      </div>
+      <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2 text-sm text-slate-600">
+        <span class="font-medium text-slate-700">Role:</span> {{ user.get_role_display }}
+        {% if user.clinic %} · <span class="font-medium text-slate-700">Clinic:</span> {{ user.clinic.name }}{% endif %}
+        <span class="block text-xs text-slate-500 mt-1">Role and clinic are managed by your administrator.</span>
+      </div>
+      <button type="submit" class="px-4 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 min-h-[44px]">
+        Save details
+      </button>
+    </form>
+  </section>
+
+  <section class="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
+    <h3 class="text-base font-semibold text-slate-900 mb-1">Change password</h3>
+    <p class="text-sm text-slate-600 mb-4">Use at least 12 characters with a mix of letters and numbers.</p>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="password">
+      <div>
+        <label for="id_old_password" class="block text-sm font-medium text-slate-700 mb-1">Current password</label>
+        {{ password_form.old_password }}
+        {% if password_form.old_password.errors %}<p class="text-xs text-red-600 mt-1">{{ password_form.old_password.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label for="id_new_password1" class="block text-sm font-medium text-slate-700 mb-1">New password</label>
+        {{ password_form.new_password1 }}
+        {% if password_form.new_password1.errors %}<p class="text-xs text-red-600 mt-1">{{ password_form.new_password1.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label for="id_new_password2" class="block text-sm font-medium text-slate-700 mb-1">Confirm new password</label>
+        {{ password_form.new_password2 }}
+        {% if password_form.new_password2.errors %}<p class="text-xs text-red-600 mt-1">{{ password_form.new_password2.errors.0 }}</p>{% endif %}
+      </div>
+      <button type="submit" class="px-4 py-2.5 rounded-lg bg-slate-800 text-white text-sm font-semibold hover:bg-slate-900 min-h-[44px]">
+        Update password
+      </button>
+    </form>
+  </section>
+</div>
+{% endblock %}

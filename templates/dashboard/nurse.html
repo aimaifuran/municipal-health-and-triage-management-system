@@ -6,7 +6,7 @@
   <section class="bg-white rounded-xl shadow-sm border p-4 md:p-6">
     <h2 class="text-lg font-semibold mb-2">Incoming Patients — Triage Queue</h2>
     <p class="text-xs text-slate-500 mb-2">Updates every 10 seconds when doctors admit or discharge patients.</p>
-    {% include "dashboard/partials/table_filters.html" with table_filters=queue_table_filters filter_form_id="queue-filters-form" show_severity_filter=True search_placeholder="Patient ID or name" hx_post_url=queue_partial_url hx_target="#nurse-queue-panel" reset_page_param="queue_page" %}
+    {% include "dashboard/partials/table_filters.html" with table_filters=queue_table_filters filter_form_id="queue-filters-form" show_severity_filter=True severity_before_actions=True search_placeholder="Patient ID or name" hx_post_url=queue_partial_url hx_target="#nurse-queue-panel" reset_page_param="queue_page" %}
     <div
       id="nurse-queue-panel"
       hx-post="{{ queue_partial_url }}"
@@ -20,6 +20,26 @@
         <span>Refreshing queue…</span>
       </div>
       {% include "dashboard/partials/queue_panel.html" with queue_page=queue_page can_edit_triage=can_edit_triage queue_partial_url=queue_partial_url page_param="queue_page" filter_form_id="queue-filters-form" queue_hx_target="#nurse-queue-panel" table_filters=queue_table_filters severity_choices=severity_choices %}
+    </div>
+
+    <div class="border-t border-slate-100 pt-6">
+      <h2 class="text-lg font-semibold mb-1">Discharged Patients</h2>
+      <p class="text-sm text-slate-600 mb-2">Completed consultations — patients who were discharged from care.</p>
+      {% include "dashboard/partials/table_filters.html" with table_filters=discharged_table_filters filter_form_id="discharged-filters-form" show_severity_filter=True severity_before_actions=True search_placeholder="Patient ID or name" hx_post_url=discharged_partial_url hx_target="#discharged-container" reset_page_param="discharged_page" %}
+      <div
+        id="discharged-container"
+        hx-post="{{ discharged_partial_url }}"
+        hx-include="#discharged-filters-form"
+        hx-trigger="refreshNursePanels from:body"
+        hx-swap="innerHTML"
+        hx-indicator="#discharged-refresh-indicator"
+      >
+        <div id="discharged-refresh-indicator" class="htmx-indicator flex items-center gap-2 text-xs text-slate-500 py-1 mb-2" role="status">
+          {% include "partials/loading_spinner.html" %}
+          <span>Updating discharged list…</span>
+        </div>
+        {% include "dashboard/partials/discharged_patients_table.html" %}
+      </div>
     </div>
   </section>
 
@@ -75,4 +95,5 @@
     </div>
   </section>
 </div>
+<div id="discharged-patient-detail-modal"></div>
 {% endblock %}

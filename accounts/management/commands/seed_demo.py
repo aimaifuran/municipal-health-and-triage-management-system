@@ -71,25 +71,25 @@ class Command(BaseCommand):
     def _seed_clinics(self) -> dict[str, Clinic]:
         specs = [
             {
-                "key": "cebu",
-                "name": "Cebu Municipal Health Center",
-                "address": "Osmeña Blvd, Cebu City",
-                "municipality": "Cebu City",
-                "region": "Region VII",
+                "key": "carigara",
+                "name": "Montesclaros' Clinic",
+                "address": "Real St, 6529 Carigara, Philippines, Carigara, Philippines, 6529",
+                "municipality": "Carigara",
+                "region": "Region VIII",
             },
             {
-                "key": "mandaue",
-                "name": "Mandaue City Health Unit",
-                "address": "M.C. Briones St, Mandaue City",
-                "municipality": "Mandaue City",
-                "region": "Region VII",
+                "key": "barugo",
+                "name": "Barugo Rural Health Unit",
+                "address": "Barugo, Leyte, Brgy. Poblacion Dist. Iii, Barugo, Leyte, 6519",
+                "municipality": "Barugo",
+                "region": "Region VIII",
             },
             {
-                "key": "lapu",
-                "name": "Lapu-Lapu Community Clinic",
-                "address": "Pajo, Lapu-Lapu City",
-                "municipality": "Lapu-Lapu City",
-                "region": "Region VII",
+                "key": "capoocan",
+                "name": "Capoocan Rural Health Unit",
+                "address": "Capoocan, Leyte, Brgy. Poblacion Zone I, Capoocan, Leyte, 6530",
+                "municipality": "Capoocan",
+                "region": "Region VIII",
             },
         ]
         clinics: dict[str, Clinic] = {}
@@ -106,16 +106,16 @@ class Command(BaseCommand):
         return clinics
 
     def _seed_users(self, clinics: dict[str, Clinic]) -> dict:
-        cebu = clinics["cebu"]
-        mandaue = clinics["mandaue"]
+        carigara = clinics["carigara"]
+        barugo = clinics["barugo"]
         user_specs = [
             ("admin@mhtms.gov.ph", UserRole.SUPER_ADMIN, None, True, True),
-            ("doctor@mhtms.gov.ph", UserRole.DOCTOR, cebu, False, False),
-            ("doctor2@mhtms.gov.ph", UserRole.DOCTOR, mandaue, False, False),
-            ("nurse@mhtms.gov.ph", UserRole.NURSE, cebu, False, False),
-            ("nurse2@mhtms.gov.ph", UserRole.NURSE, mandaue, False, False),
-            ("reception@mhtms.gov.ph", UserRole.RECEPTIONIST, cebu, False, False),
-            ("reception2@mhtms.gov.ph", UserRole.RECEPTIONIST, mandaue, False, False),
+            ("doctor@mhtms.gov.ph", UserRole.DOCTOR, carigara, False, False),
+            ("doctor2@mhtms.gov.ph", UserRole.DOCTOR, barugo, False, False),
+            ("nurse@mhtms.gov.ph", UserRole.NURSE, carigara, False, False),
+            ("nurse2@mhtms.gov.ph", UserRole.NURSE, barugo, False, False),
+            ("reception@mhtms.gov.ph", UserRole.RECEPTIONIST, carigara, False, False),
+            ("reception2@mhtms.gov.ph", UserRole.RECEPTIONIST, barugo, False, False),
         ]
         doctors: list[User] = []
         nurses: list[User] = []
@@ -151,35 +151,35 @@ class Command(BaseCommand):
     def _seed_patients(self, clinics: dict[str, Clinic], users: dict) -> list[Patient]:
         reception = users["reception"]
         patient_specs = [
-            # Cebu — primary demo clinic (nurse@mhtms.gov.ph)
-            ("PAT-SAMPLE-001", "Maria", "Santos", "1992-03-10", Gender.FEMALE, clinics["cebu"], "Fever, cough"),
-            ("PAT-SAMPLE-002", "Juan", "Dela Cruz", "1985-07-22", Gender.MALE, clinics["cebu"], "Chest pain"),
-            ("PAT-SAMPLE-003", "Ana", "Reyes", "2018-11-05", Gender.FEMALE, clinics["cebu"], "High fever"),
-            ("PAT-SAMPLE-004", "Pedro", "Garcia", "1958-01-30", Gender.MALE, clinics["cebu"], "Difficulty breathing"),
-            ("PAT-SAMPLE-005", "Liza", "Mendoza", "1998-09-14", Gender.FEMALE, clinics["cebu"], "Headache"),
-            ("PAT-SAMPLE-011", "Roberto", "Navarro", "1959-06-15", Gender.MALE, clinics["cebu"], "Chest pain, cold sweats"),
-            ("PAT-SAMPLE-012", "Corazon", "Bautista", "1967-04-03", Gender.FEMALE, clinics["cebu"], "Stroke symptoms"),
-            ("PAT-SAMPLE-013", "Ramon", "Castillo", "1964-11-20", Gender.MALE, clinics["cebu"], "Hypertension"),
-            ("PAT-SAMPLE-014", "Grace", "Flores", "1981-08-27", Gender.FEMALE, clinics["cebu"], "Cough"),
-            ("PAT-SAMPLE-015", "Jenny", "Aquino", "1996-02-14", Gender.FEMALE, clinics["cebu"], "Pregnancy"),
-            ("PAT-SAMPLE-016", "Teodoro", "Dizon", "1951-12-08", Gender.MALE, clinics["cebu"], "Weakness"),
-            ("PAT-SAMPLE-017", "Mark", "Salazar", "1990-07-19", Gender.MALE, clinics["cebu"], "Severe pain"),
-            ("PAT-SAMPLE-018", "Sophie", "Yu", "2021-05-22", Gender.FEMALE, clinics["cebu"], "Pediatric URI"),
-            ("PAT-SAMPLE-019", "Paul", "Chua", "1995-10-30", Gender.MALE, clinics["cebu"], "Follow-up"),
-            ("PAT-SAMPLE-020", "Darwin", "Perez", "1984-03-11", Gender.MALE, clinics["cebu"], "Trauma"),
-            ("PAT-SAMPLE-021", "Hannah", "Ong", "2000-01-25", Gender.FEMALE, clinics["cebu"], "Walk-in registration"),
-            ("PAT-SAMPLE-022", "Kevin", "Sy", "1987-09-09", Gender.MALE, clinics["cebu"], "Walk-in registration"),
-            ("PAT-SAMPLE-023", "Diana", "Co", "1978-12-02", Gender.FEMALE, clinics["cebu"], "Palpitations"),
-            ("PAT-DEMO-001", "Sofia", "Ramos", "1993-05-12", Gender.FEMALE, clinics["cebu"], "Mild cold"),
-            # Mandaue
-            ("PAT-SAMPLE-006", "Carlos", "Lim", "1960-12-01", Gender.MALE, clinics["mandaue"], "Hypertension follow-up"),
-            ("PAT-SAMPLE-007", "Rosa", "Tan", "1995-04-18", Gender.FEMALE, clinics["mandaue"], "Abdominal pain"),
-            ("PAT-SAMPLE-008", "Miguel", "Torres", "2005-06-25", Gender.MALE, clinics["mandaue"], "Sprain"),
-            ("PAT-SAMPLE-024", "Alma", "Gutierrez", "1968-07-07", Gender.FEMALE, clinics["mandaue"], "Diabetes follow-up"),
-            ("PAT-SAMPLE-025", "Victor", "Ramos", "1975-03-16", Gender.MALE, clinics["mandaue"], "Unconscious"),
-            # Lapu-Lapu
-            ("PAT-SAMPLE-009", "Elena", "Villanueva", "1988-08-08", Gender.FEMALE, clinics["lapu"], "Prenatal check"),
-            ("PAT-SAMPLE-010", "James", "Go", "1990-02-17", Gender.MALE, clinics["lapu"], "Sore throat"),
+            # Carigara — primary demo clinic (nurse@mhtms.gov.ph)
+            ("PAT-SAMPLE-001", "Maria", "Santos", "1992-03-10", Gender.FEMALE, clinics["carigara"], "Fever, cough"),
+            ("PAT-SAMPLE-002", "Juan", "Dela Cruz", "1985-07-22", Gender.MALE, clinics["carigara"], "Chest pain"),
+            ("PAT-SAMPLE-003", "Ana", "Reyes", "2018-11-05", Gender.FEMALE, clinics["carigara"], "High fever"),
+            ("PAT-SAMPLE-004", "Pedro", "Garcia", "1958-01-30", Gender.MALE, clinics["carigara"], "Difficulty breathing"),
+            ("PAT-SAMPLE-005", "Liza", "Mendoza", "1998-09-14", Gender.FEMALE, clinics["carigara"], "Headache"),
+            ("PAT-SAMPLE-011", "Roberto", "Navarro", "1959-06-15", Gender.MALE, clinics["carigara"], "Chest pain, cold sweats"),
+            ("PAT-SAMPLE-012", "Corazon", "Bautista", "1967-04-03", Gender.FEMALE, clinics["carigara"], "Stroke symptoms"),
+            ("PAT-SAMPLE-013", "Ramon", "Castillo", "1964-11-20", Gender.MALE, clinics["carigara"], "Hypertension"),
+            ("PAT-SAMPLE-014", "Grace", "Flores", "1981-08-27", Gender.FEMALE, clinics["carigara"], "Cough"),
+            ("PAT-SAMPLE-015", "Jenny", "Aquino", "1996-02-14", Gender.FEMALE, clinics["carigara"], "Pregnancy"),
+            ("PAT-SAMPLE-016", "Teodoro", "Dizon", "1951-12-08", Gender.MALE, clinics["carigara"], "Weakness"),
+            ("PAT-SAMPLE-017", "Mark", "Salazar", "1990-07-19", Gender.MALE, clinics["carigara"], "Severe pain"),
+            ("PAT-SAMPLE-018", "Sophie", "Yu", "2021-05-22", Gender.FEMALE, clinics["carigara"], "Pediatric URI"),
+            ("PAT-SAMPLE-019", "Paul", "Chua", "1995-10-30", Gender.MALE, clinics["carigara"], "Follow-up"),
+            ("PAT-SAMPLE-020", "Darwin", "Perez", "1984-03-11", Gender.MALE, clinics["carigara"], "Trauma"),
+            ("PAT-SAMPLE-021", "Hannah", "Ong", "2000-01-25", Gender.FEMALE, clinics["carigara"], "Walk-in registration"),
+            ("PAT-SAMPLE-022", "Kevin", "Sy", "1987-09-09", Gender.MALE, clinics["carigara"], "Walk-in registration"),
+            ("PAT-SAMPLE-023", "Diana", "Co", "1978-12-02", Gender.FEMALE, clinics["carigara"], "Palpitations"),
+            ("PAT-DEMO-001", "Sofia", "Ramos", "1993-05-12", Gender.FEMALE, clinics["carigara"], "Mild cold"),
+            # Barugo
+            ("PAT-SAMPLE-006", "Carlos", "Lim", "1960-12-01", Gender.MALE, clinics["barugo"], "Hypertension follow-up"),
+            ("PAT-SAMPLE-007", "Rosa", "Tan", "1995-04-18", Gender.FEMALE, clinics["barugo"], "Abdominal pain"),
+            ("PAT-SAMPLE-008", "Miguel", "Torres", "2005-06-25", Gender.MALE, clinics["barugo"], "Sprain"),
+            ("PAT-SAMPLE-024", "Alma", "Gutierrez", "1968-07-07", Gender.FEMALE, clinics["barugo"], "Diabetes follow-up"),
+            ("PAT-SAMPLE-025", "Victor", "Ramos", "1975-03-16", Gender.MALE, clinics["barugo"], "Unconscious"),
+            # Capoocan
+            ("PAT-SAMPLE-009", "Elena", "Villanueva", "1988-08-08", Gender.FEMALE, clinics["capoocan"], "Prenatal check"),
+            ("PAT-SAMPLE-010", "James", "Go", "1990-02-17", Gender.MALE, clinics["capoocan"], "Sore throat"),
         ]
         patients: list[Patient] = []
         for num, first, last, bday, gender, clinic, _notes in patient_specs:
@@ -203,20 +203,20 @@ class Command(BaseCommand):
         return patients
 
     def _seed_assignments(self, doctors: list[User], patients: list[Patient]) -> None:
-        cebu_doctor = doctors[0]
+        carigara_doctor = doctors[0]
         for patient in patients:
-            if patient.clinic_id == cebu_doctor.clinic_id:
+            if patient.clinic_id == carigara_doctor.clinic_id:
                 DoctorPatientAssignment.objects.get_or_create(
-                    doctor=cebu_doctor,
+                    doctor=carigara_doctor,
                     patient=patient,
                     defaults={"is_active": True},
                 )
         if len(doctors) > 1:
-            mandaue_doctor = doctors[1]
+            barugo_doctor = doctors[1]
             for patient in patients:
-                if patient.clinic_id == mandaue_doctor.clinic_id:
+                if patient.clinic_id == barugo_doctor.clinic_id:
                     DoctorPatientAssignment.objects.get_or_create(
-                        doctor=mandaue_doctor,
+                        doctor=barugo_doctor,
                         patient=patient,
                         defaults={"is_active": True},
                     )
@@ -243,7 +243,7 @@ class Command(BaseCommand):
             "PAT-SAMPLE-019": ("118/78", 74, 16, "99.0", "36.8", "Mild headache"),
             "PAT-SAMPLE-020": ("130/85", 112, 20, "96.0", "37.2", "Major trauma with severe bleeding"),
             "PAT-SAMPLE-023": ("138/88", 105, 20, "94.0", "37.8", "Palpitations and severe pain"),
-            # Mandaue / Lapu-Lapu
+            # Barugo / Capoocan
             "PAT-SAMPLE-006": ("130/85", 82, 17, "97.0", "37.0", "Follow-up for hypertension"),
             "PAT-SAMPLE-007": ("125/80", 90, 20, "95.0", "38.0", "Abdominal pain, nausea"),
             "PAT-SAMPLE-008": ("118/78", 70, 15, "99.5", "36.7", "Ankle sprain, swelling"),
@@ -267,7 +267,7 @@ class Command(BaseCommand):
                 summary["awaiting"] += 1
                 continue
 
-            nurse = nurses[0] if patient.clinic.municipality == "Cebu City" else nurses[-1]
+            nurse = nurses[0] if patient.clinic.municipality == "Carigara" else nurses[-1]
             bp, hr, rr, o2, temp, symptoms = spec
             TriageRecord.objects.filter(patient=patient, is_active=True).update(
                 is_active=False,
@@ -327,12 +327,12 @@ class Command(BaseCommand):
             (5, "Hypertension Stage 2", "Lifestyle modification, medication", "Losartan 50mg daily", True, False),
         ]
         count = 0
-        cebu_doctor = doctors[0]
+        carigara_doctor = doctors[0]
         for idx, (p_idx, dx, tx, rx, admitted, discharged) in enumerate(consult_specs):
             if p_idx >= len(patients):
                 break
             patient = patients[p_idx]
-            doctor = cebu_doctor if patient.clinic_id == cebu_doctor.clinic_id else doctors[1]
+            doctor = carigara_doctor if patient.clinic_id == carigara_doctor.clinic_id else doctors[1]
             consultation, created = Consultation.objects.get_or_create(
                 patient=patient,
                 doctor=doctor,
@@ -363,5 +363,7 @@ class Command(BaseCommand):
         for email in User.objects.filter(email__endswith="@mhtms.gov.ph").values_list("email", flat=True):
             self.stdout.write(f"    • {email}")
         self.stdout.write("\n  Re-seed anytime: python manage.py seed_demo --reset")
-        self.stdout.write("  Nurse login (Cebu): nurse@mhtms.gov.ph — queue shows Critical/Moderate/Stable mix")
+        self.stdout.write(
+            "  Nurse login (Carigara): nurse@mhtms.gov.ph — queue shows Critical/Moderate/Stable mix"
+        )
         self.stdout.write("  Awaiting triage: PAT-SAMPLE-021, PAT-SAMPLE-022 (register vitals in dashboard)\n")

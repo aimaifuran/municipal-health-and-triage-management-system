@@ -1,11 +1,9 @@
 """Development settings."""
-import os
-
 from .base import *  # noqa: F403
 
 DEBUG = config("DEBUG", default=True, cast=bool)  # noqa: F405
 
-if os.environ.get("USE_SQLITE_DEV") == "1":
+if config("USE_SQLITE_DEV", default="0") == "1":  # noqa: F405
     DATABASES = {  # noqa: F405
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

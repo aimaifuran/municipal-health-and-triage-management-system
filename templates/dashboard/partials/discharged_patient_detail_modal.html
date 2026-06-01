@@ -160,14 +160,45 @@
       </div>
     </section>
 
-    <div class="mt-6 flex justify-end">
-      <button
-        type="button"
-        class="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 min-h-[44px]"
-        @click="$el.closest('.confirm-modal-backdrop').remove()"
-      >
-        Close
-      </button>
-    </div>
+    <footer class="mt-6 -mx-6 -mb-6 px-4 sm:px-6 py-4 bg-slate-50 border-t border-slate-200 rounded-b-2xl">
+      <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+        Official discharge summary for <span class="font-medium text-slate-700">{{ patient.full_name }}</span> — give to the patient or keep for records.
+      </p>
+      <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2">
+        <a
+          href="{% url 'dashboard:doctor-discharged-summary-download' consultation.id %}"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-semibold shadow-sm hover:bg-teal-700 active:bg-teal-800 min-h-[44px] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          download
+          title="Download discharge summary as PDF"
+        >
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Download PDF
+        </a>
+        <a
+          href="{% url 'dashboard:doctor-discharged-summary-print' consultation.id %}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-teal-600 text-teal-700 text-sm font-medium bg-white hover:bg-teal-50 active:bg-teal-100 min-h-[44px] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          title="Open print-friendly summary in a new tab"
+        >
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          Print
+        </a>
+        <button
+          type="button"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-600 text-sm font-medium bg-white hover:bg-slate-100 hover:text-slate-800 active:bg-slate-200 min-h-[44px] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+          @click="$el.closest('.confirm-modal-backdrop').remove()"
+        >
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Close
+        </button>
+      </div>
+    </footer>
   </div>
 </div>

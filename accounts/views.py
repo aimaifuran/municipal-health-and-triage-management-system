@@ -1,13 +1,23 @@
-"""Authentication views."""
+"""Authentication and profile views."""
+import logging
+
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
-from accounts.forms import LoginForm
+from auditlogs.models import AuditAction
+
+from accounts.forms import LoginForm, ProfileDetailsForm, ProfilePasswordForm, ProfilePictureForm
+from accounts.profile_service import ProfileService
 from auditlogs.services import AuditService
+
+logger = logging.getLogger(__name__)
 
 
 class UserLoginView(LoginView):
@@ -77,3 +87,101 @@ class UserLogoutView(LogoutView):
                 request=request,
             )
         return super().dispatch(request, *args, **kwargs)
+
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    """Manage profile details, password, and profile picture."""
+
+    template_name = "accounts/profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context.update(
+            {
+                "details_form": ProfileDetailsForm(instance=user),
+                "password_form": ProfilePasswordForm(user=user),
+                "picture_form": ProfilePictureForm(),
+            }
+        )
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get("action", "")
+        user = request.user
+
+        if action == "details":
+            return self._post_details(request, user)
+        if action == "password":
+            return self._post_password(request, user)
+        if action == "picture":
+            return self._post_picture(request, user)
+        if action == "remove_picture":
+            return self._post_remove_picture(request, user)
+
+        messages.error(request, "Unknown profile action.")
+        return redirect("accounts:profile")
+
+    def _post_details(self, request, user):
+        form = ProfileDetailsForm(request.POST, instance=user)
+        if form.is_valid():
+            ProfileService.update_details(
+                user=user,
+                validated_data=form.cleaned_data,
+                request=request,
+            )
+            messages.success(request, "Profile details updated.")
+        else:
+            for error in form.errors.values():
+                messages.error(request, error[0])
+        return redirect("accounts:profile")
+
+    def _post_password(self, request, user):
+        form = ProfilePasswordForm(user=user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, user)
+            AuditService.log(
+                action=AuditAction.UPDATE,
+                object_type="User",
+                object_id=str(user.pk),
+                user=user,
+                request=request,
+                details={"section": "password_change"},
+            )
+            messages.success(request, "Password changed successfully.")
+        else:
+            for error in form.errors.values():
+                messages.error(request, error[0])
+        return redirect("accounts:profile")
+
+    def _post_picture(self, request, user):
+        form = ProfilePictureForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                ProfileService.update_picture(
+                    user=user,
+                    uploaded_file=form.cleaned_data["picture"],
+                    request=request,
+                )
+                messages.success(request, "Profile picture updated.")
+            except ValidationError as exc:
+                messages.error(request, exc.messages[0] if exc.messages else str(exc))
+            except Exception as exc:
+                logger.exception("Profile picture upload failed for user %s", user.pk)
+                if settings.DEBUG:
+                    messages.error(request, f"Could not upload profile picture: {exc}")
+                else:
+                    messages.error(
+                        request,
+                        "Could not upload profile picture. Check Cloudinary settings and try again.",
+                    )
+        else:
+            for error in form.errors.values():
+                messages.error(request, error[0])
+        return redirect("accounts:profile")
+
+    def _post_remove_picture(self, request, user):
+        ProfileService.remove_picture(user=user, request=request)
+        messages.success(request, "Profile picture removed.")
+        return redirect("accounts:profile")

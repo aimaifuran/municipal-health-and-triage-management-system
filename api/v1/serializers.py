@@ -12,7 +12,16 @@ from triage.models import TriageRecord
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "email", "first_name", "last_name", "role", "clinic", "is_verified")
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "clinic",
+            "is_verified",
+            "profile_picture_url",
+        )
         read_only_fields = fields
 
 

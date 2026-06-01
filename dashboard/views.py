@@ -4,7 +4,10 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Exists, OuterRef, Prefetch, Subquery
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 from django.urls import reverse
 from django.utils import timezone
 from django.views import View
@@ -42,9 +45,24 @@ from common.pagination import (
     STAFF_PER_PAGE,
     paginate_queryset,
 )
+from consultations.ai_consultation import (
+    ConsultationAIConfigurationError,
+    ConsultationAIError,
+    ConsultationAIRequestError,
+    ConsultationAIResponseError,
+    generate_consultation_suggestion,
+)
 from consultations.forms import ConsultationRecordForm
 from consultations.models import Consultation
 from consultations.services import ConsultationService
+from dashboard.discharge_summary import (
+    build_discharge_summary_context,
+    discharge_summary_filename,
+    get_discharged_consultation,
+    get_latest_triage,
+    patient_age_years,
+    render_discharge_summary_pdf,
+)
 from patients.forms import PatientRegistrationForm
 from patients.models import Patient
 from patients.services import PatientService
@@ -215,6 +233,7 @@ def _nurse_dashboard_context(request) -> dict:
     ctx.update(table_filters_context(request, ListScope.QUEUE, context_key="queue_table_filters"))
     ctx.update(_awaiting_table_context(request))
     ctx.update(_nurse_patient_select_context(request))
+    ctx.update(_doctor_discharged_table_context(request))
     return ctx
 
 
@@ -557,16 +576,55 @@ class DoctorQueueConsultationSubmitView(DoctorRequiredMixin, View):
         return redirect("dashboard:home")
 
 
-class DoctorDischargedPartialView(DoctorRequiredMixin, ListFilterPostView):
+@method_decorator(require_POST, name="dispatch")
+class DoctorQueueConsultationAIView(DoctorRequiredMixin, View):
+    """Generate draft consultation fields via OpenAI for doctor review."""
+
+    def post(self, request):
+        patient = get_object_or_404(Patient, pk=request.POST.get("patient_id"))
+        AccessControlService.assert_patient_access(request.user, patient, request)
+        triage = (
+            TriageRecord.objects.filter(patient=patient, is_active=True)
+            .select_related("nurse", "patient", "patient__clinic")
+            .first()
+        )
+        consultation = ConsultationService.get_open_consultation(patient, request.user)
+        try:
+            suggestion = generate_consultation_suggestion(patient, triage, consultation)
+        except ConsultationAIConfigurationError as exc:
+            return JsonResponse({"error": str(exc)}, status=503)
+        except ConsultationAIRequestError as exc:
+            return JsonResponse({"error": str(exc)}, status=502)
+        except ConsultationAIResponseError as exc:
+            return JsonResponse({"error": str(exc)}, status=502)
+        except ConsultationAIError as exc:
+            return JsonResponse({"error": str(exc)}, status=500)
+
+        return JsonResponse(
+            {
+                **suggestion.as_dict(),
+                "disclaimer": (
+                    "AI-generated draft for physician review only. Verify examination findings, "
+                    "update as needed, and accept clinical responsibility before saving."
+                ),
+            }
+        )
+
+
+class DoctorDischargedPartialView(LoginRequiredMixin, ListFilterPostView):
     """HTMX partial for the doctor's discharged patients table."""
 
     list_scope = ListScope.DISCHARGED
     page_params = ("discharged_page",)
 
     def get(self, request):
+        if request.user.role not in (UserRole.DOCTOR, UserRole.NURSE):
+            return redirect("dashboard:unauthorized")
         return self._render(request)
 
     def post(self, request):
+        if request.user.role not in (UserRole.DOCTOR, UserRole.NURSE):
+            return redirect("dashboard:unauthorized")
         return self._render(request)
 
     def _render(self, request):
@@ -626,34 +684,57 @@ class DoctorDischargePanelPartialView(DoctorRequiredMixin, ListFilterPostView):
         return render(request, "dashboard/partials/bulk_discharge_panel.html", ctx)
 
 
-class DoctorDischargedPatientDetailView(DoctorRequiredMixin, View):
+class DoctorDischargedPatientDetailView(LoginRequiredMixin, View):
     """HTMX modal with full details for a discharged consultation."""
 
     def get(self, request, pk):
-        consultation = get_object_or_404(
-            AccessControlService.filter_consultations_for_user(
-                request.user,
-                Consultation.objects.filter(admitted=True, discharged=True),
-            )
-            .select_related("patient", "patient__clinic", "doctor")
-            .prefetch_related(
-                Prefetch(
-                    "patient__triage_records",
-                    queryset=TriageRecord.objects.select_related("nurse").order_by("-created_at"),
-                )
-            ),
-            pk=pk,
-        )
-        AccessControlService.assert_patient_access(request.user, consultation.patient, request)
-        triage_records = list(consultation.patient.triage_records.all())
-        triage = triage_records[0] if triage_records else None
+        if request.user.role not in (UserRole.DOCTOR, UserRole.NURSE):
+            return redirect("dashboard:unauthorized")
+        consultation = get_discharged_consultation(request.user, pk, request)
         return render(
             request,
             "dashboard/partials/discharged_patient_detail_modal.html",
             {
                 "consultation": consultation,
                 "patient": consultation.patient,
-                "triage": triage,
+                "triage": get_latest_triage(consultation),
+            },
+        )
+
+
+class DoctorDischargedPatientSummaryDownloadView(LoginRequiredMixin, View):
+    """PDF discharge summary for the patient (download)."""
+
+    def get(self, request, pk):
+        if request.user.role not in (UserRole.DOCTOR, UserRole.NURSE):
+            return redirect("dashboard:unauthorized")
+        consultation = get_discharged_consultation(request.user, pk, request)
+        summary = build_discharge_summary_context(consultation)
+        response = HttpResponse(render_discharge_summary_pdf(summary), content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{discharge_summary_filename(summary)}"'
+        return response
+
+
+class DoctorDischargedPatientSummaryPrintView(LoginRequiredMixin, View):
+    """Print-friendly discharge summary (opens browser print dialog)."""
+
+    def get(self, request, pk):
+        if request.user.role not in (UserRole.DOCTOR, UserRole.NURSE):
+            return redirect("dashboard:unauthorized")
+        consultation = get_discharged_consultation(request.user, pk, request)
+        summary = build_discharge_summary_context(consultation)
+        visit_date = consultation.discharged_at or consultation.admitted_at
+        on_date = timezone.localtime(visit_date).date() if visit_date else None
+        return render(
+            request,
+            "dashboard/discharge_summary_print.html",
+            {
+                "consultation": summary.consultation,
+                "patient": summary.patient,
+                "triage": summary.triage,
+                "document_ref": summary.document_ref,
+                "generated_at": summary.generated_at,
+                "patient_age": patient_age_years(summary.patient.birth_date, on_date),
             },
         )
 
