@@ -1,10 +1,16 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy: Dashboard → New → Blueprint → connect this repo.
 services:
   - type: web
     name: mhtms-web
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements/prod.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput
+    region: singapore
+    branch: main
+    buildCommand: ./build.sh
+    preDeployCommand: python manage.py migrate --noinput
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /health/
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.0"
@@ -21,16 +27,18 @@ services:
       - key: REDIS_URL
         fromService:
           name: mhtms-redis
-          type: redis
+          type: keyvalue
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
           name: mhtms-redis
-          type: redis
+          type: keyvalue
           property: connectionString
       - key: ALLOWED_HOSTS
         sync: false
       - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
@@ -38,14 +46,25 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
 
-  - type: redis
+  - type: keyvalue
     name: mhtms-redis
     plan: free
+    region: singapore
     maxmemoryPolicy: allkeys-lru
+    # Empty list = only other Render services in your account (private network).
+    # Your web service connects via the internal connectionString — not the public URL.
+    ipAllowList: []
 
 databases:
   - name: mhtms-db
     plan: free
+    region: singapore
     databaseName: mhtms
     user: mhtms

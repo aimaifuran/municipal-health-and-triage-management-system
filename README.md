@@ -127,10 +127,14 @@ Returns aggregated data only; PHI fields are `"HIPAA Restricted"`.
 
 ## Deployment (Render)
 
-1. Push repository to GitHub
-2. Create Render Blueprint from `render.yaml`
-3. Set environment variables: `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, Cloudinary credentials
-4. Deploy — migrations run via `buildCommand`
+Full step-by-step guide: **[docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md)**
+
+Quick overview:
+
+1. Push this repository to GitHub
+2. Render Dashboard → **New** → **Blueprint** → select the repo (`render.yaml`)
+3. Set `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and Cloudinary credentials on `mhtms-web`
+4. After deploy: `python manage.py seed_demo` in Render Shell (optional demo data)
 
 `DEBUG` is **always False** in production settings.
 

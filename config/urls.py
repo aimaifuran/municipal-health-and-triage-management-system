@@ -5,7 +5,11 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from core.health import health_check, health_live
+
 urlpatterns = [
+    path("health/", health_check, name="health-check"),
+    path("health/live/", health_live, name="health-live"),
     path("admin/", admin.site.urls),
     path("", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     path("accounts/", include("accounts.urls")),
