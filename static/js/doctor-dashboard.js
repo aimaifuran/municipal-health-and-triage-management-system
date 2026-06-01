@@ -280,8 +280,8 @@
       if (backdrop) initConsultationModal(backdrop);
     } else {
       root.querySelectorAll("[data-consultation-modal]").forEach(initConsultationModal);
-      const host = root.querySelector?.("#doctor-consultation-modal");
-      host?.querySelectorAll("[data-consultation-modal]").forEach(initConsultationModal);
+      const consultHost = root.querySelector?.("#doctor-consultation-modal");
+      consultHost?.querySelectorAll("[data-consultation-modal]").forEach(initConsultationModal);
     }
 
     const panel = root.id === "bulk-discharge-panel" ? root : root.querySelector?.("#bulk-discharge-panel");

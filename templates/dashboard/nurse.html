@@ -97,3 +97,8 @@
 </div>
 <div id="discharged-patient-detail-modal"></div>
 {% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/discharged-detail-modal.js' %}"></script>
+{% endblock %}
