@@ -13,6 +13,14 @@ document.addEventListener("alpine:init", () => {
     consultAiError: "",
     consultAiDisclaimer: "",
 
+    init() {
+      this.showAdmitConfirm = false;
+      this.consultAiLoading = false;
+      this.consultAiError = "";
+      this.consultAiDisclaimer = "";
+      this.initFromDataset();
+    },
+
     initFromDataset() {
       this.patientName = this.$el.dataset.patientName || "";
       this.patientNumber = this.$el.dataset.patientNumber || "";
@@ -113,6 +121,13 @@ document.addEventListener("alpine:init", () => {
     showReadmitConfirm: false,
     noReadmitSelection: false,
     selectedReadmitPatients: [],
+
+    init() {
+      this.showConfirm = false;
+      this.noSelection = false;
+      this.showReadmitConfirm = false;
+      this.noReadmitSelection = false;
+    },
 
     _labelsFromChecked(checked, fallback) {
       return Array.from(checked).map((checkbox) => {

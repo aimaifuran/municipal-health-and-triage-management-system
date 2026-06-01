@@ -163,9 +163,10 @@ body.htmx-request.htmx-settled #htmx-global-indicator {
   isolation: isolate;
 }
 
-/* Bulk discharge button — HTMX loading state */
-.bulk-discharge-btn .htmx-indicator {
-  display: none;
+/* Bulk discharge button — HTMX loading state (beat Tailwind utilities on indicators) */
+.bulk-discharge-btn .htmx-indicator,
+.bulk-readmit-btn .htmx-indicator {
+  display: none !important;
 }
 
 .bulk-discharge-btn.htmx-request {
@@ -173,15 +174,12 @@ body.htmx-request.htmx-settled #htmx-global-indicator {
   pointer-events: none;
 }
 
-.bulk-discharge-btn.htmx-request .htmx-indicator {
-  display: inline-flex;
+.bulk-discharge-btn.htmx-request .htmx-indicator,
+.bulk-readmit-btn.htmx-request .htmx-indicator {
+  display: inline-flex !important;
 }
 
 .bulk-discharge-btn.htmx-request .bulk-discharge-label {
-  display: none;
-}
-
-.bulk-readmit-btn .htmx-indicator {
   display: none;
 }
 

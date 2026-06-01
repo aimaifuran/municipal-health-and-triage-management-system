@@ -11,10 +11,8 @@
     </p>
 
     <div
-      x-show="noReadmitSelection"
-      x-cloak
-      x-transition
-      class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900"
+      class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900 hidden"
+      :class="{ 'hidden': !noReadmitSelection }"
       role="alert"
     >
       Select at least one discharged patient to restore.
@@ -55,7 +53,7 @@
         {% if not recently_discharged %}disabled{% endif %}
         @click="openReadmitConfirm()"
       >
-        <span class="htmx-indicator inline-flex items-center gap-2">
+        <span class="htmx-indicator items-center gap-2">
           {% include "partials/loading_spinner.html" %}
           Restoring…
         </span>
@@ -70,10 +68,8 @@
     {% include "dashboard/partials/table_filters.html" with table_filters=table_filters filter_form_id=filter_form_id search_placeholder="Patient ID or name" hx_post_url=discharge_panel_partial_url hx_target="#bulk-discharge-panel" hx_swap="outerHTML" reset_page_param="discharge_page" severity_choices=severity_choices %}
 
     <div
-      x-show="noSelection"
-      x-cloak
-      x-transition
-      class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900 flex items-start gap-2"
+      class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900 flex items-start gap-2 hidden"
+      :class="{ 'hidden': !noSelection }"
       role="alert"
     >
       <svg class="w-5 h-5 shrink-0 text-amber-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -110,7 +106,7 @@
         class="bulk-discharge-btn mt-4 w-full bg-teal-600 text-white py-2.5 rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2 min-h-[44px]"
         @click="openDischargeConfirm()"
       >
-        <span class="htmx-indicator inline-flex items-center gap-2">
+        <span class="htmx-indicator items-center gap-2">
           {% include "partials/loading_spinner.html" %}
           Discharging…
         </span>

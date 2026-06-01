@@ -7,7 +7,6 @@
   data-patient-number="{{ patient.patient_number }}"
   data-already-admitted="{% if consultation and consultation.admitted %}true{% else %}false{% endif %}"
   data-ai-url="{% url 'dashboard:doctor-queue-consultation-ai' %}"
-  x-init="initFromDataset()"
   role="dialog"
   aria-modal="true"
   aria-labelledby="doctor-consultation-title"
@@ -60,30 +59,34 @@
           class="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-semibold hover:bg-violet-100 active:bg-violet-200 disabled:opacity-60 disabled:cursor-not-allowed transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 min-h-[36px]"
           title="Generate draft diagnosis, treatment, and notes using AI (requires OpenAI API key)"
           :disabled="consultAiLoading"
-          @click="requestConsultAI()"
+          @click.prevent="requestConsultAI()"
         >
-          <svg x-show="!consultAiLoading" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-          </svg>
-          <span x-show="consultAiLoading" class="inline-flex items-center gap-1.5" role="status">
+          <span class="inline-flex items-center gap-1.5" :class="{ 'hidden': consultAiLoading }">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <span>Consult AI</span>
+          </span>
+          <span
+            class="hidden items-center gap-1.5"
+            :class="{ 'hidden': !consultAiLoading, 'inline-flex': consultAiLoading }"
+            role="status"
+          >
             {% include "partials/loading_spinner.html" %}
             <span>Generating…</span>
           </span>
-          <span x-show="!consultAiLoading">Consult AI</span>
         </button>
       </div>
 
       <div
-        x-show="consultAiError"
-        x-cloak
-        class="mb-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
+        class="mb-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg px-3 py-2 hidden"
+        :class="{ 'hidden': !consultAiError }"
         role="alert"
         x-text="consultAiError"
       ></div>
       <div
-        x-show="consultAiDisclaimer"
-        x-cloak
-        class="mb-3 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
+        class="mb-3 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 hidden"
+        :class="{ 'hidden': !consultAiDisclaimer }"
         role="status"
       >
         <strong>AI draft loaded.</strong>
