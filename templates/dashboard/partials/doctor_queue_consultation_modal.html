@@ -1,6 +1,6 @@
 {% load mhtms_tags %}
 <div
-  class="confirm-modal-backdrop"
+  class="confirm-modal-backdrop is-open"
   x-data="doctorConsultationModal()"
   data-patient-id="{{ patient.id }}"
   data-patient-name="{{ patient.full_name }}"
@@ -167,6 +167,7 @@
     x-show="showAdmitConfirm"
     x-cloak
     class="confirm-modal-backdrop !z-[60]"
+    :class="{ 'is-open': showAdmitConfirm }"
     @click.self="cancelAdmit()"
     @keydown.escape.window="cancelAdmit()"
     role="dialog"

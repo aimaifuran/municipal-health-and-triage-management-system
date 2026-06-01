@@ -123,6 +123,7 @@
     x-show="showReadmitConfirm"
     x-cloak
     class="confirm-modal-backdrop"
+    :class="{ 'is-open': showReadmitConfirm }"
     @click.self="cancelReadmit()"
     @keydown.escape.window="cancelReadmit()"
     role="dialog"
@@ -167,6 +168,7 @@
     x-show="showConfirm"
     x-cloak
     class="confirm-modal-backdrop"
+    :class="{ 'is-open': showConfirm }"
     @click.self="cancel()"
     @keydown.escape.window="cancel()"
     role="dialog"

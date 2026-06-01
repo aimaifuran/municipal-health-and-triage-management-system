@@ -174,17 +174,21 @@ body.htmx-request.htmx-settled #htmx-global-indicator {
   display: none;
 }
 
-/* Bulk discharge confirmation modal */
+/* Modals: hidden by default so a missing/broken Alpine build does not block the page */
 .confirm-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 50;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 1rem;
   background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(4px);
+}
+
+.confirm-modal-backdrop.is-open {
+  display: flex;
 }
 
 .confirm-modal {

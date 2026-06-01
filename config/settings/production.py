@@ -24,10 +24,10 @@ CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())  #
 
 CONTENT_SECURITY_POLICY = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com; "
+    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' https://fonts.gstatic.com; "
     "img-src 'self' data: https://res.cloudinary.com; "
-    "connect-src 'self'; "
+    "connect-src 'self' https://cdn.tailwindcss.com; "
     "frame-ancestors 'none';"
 )

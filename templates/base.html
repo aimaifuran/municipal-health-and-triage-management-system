@@ -8,6 +8,7 @@
   <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  {% block alpine_components %}{% endblock %}
   <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/notify-alerts.js' %}" defer></script>

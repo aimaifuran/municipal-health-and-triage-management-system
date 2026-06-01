@@ -260,6 +260,12 @@ python manage.py createsuperuser
 - Confirm `DATABASE_URL` is set and Postgres is **available** (same region)
 - Check **build logs** for SQL errors (migrations run in `build.sh` on free tier)
 
+### Blank login button, missing admin charts, or stuck modal on doctor dashboard
+
+Production **Content-Security-Policy** must allow the same CDNs as `templates/base.html` and `admin.html` (`unpkg.com`, `cdn.jsdelivr.net` for Chart.js, `cdn.tailwindcss.com`). If Chart.js is blocked, admin charts stay empty; if Alpine components fail to register, confirmation modals can appear stuck.
+
+After pulling the latest `main`, redeploy **mhtms-web** and hard-refresh the browser (Ctrl+Shift+R).
+
 ### Login always fails ("Invalid email or password")
 
 1. Open the latest **build** logs and confirm `seed_demo --reset` finished without errors
