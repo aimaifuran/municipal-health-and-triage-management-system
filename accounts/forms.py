@@ -1,5 +1,6 @@
 """Account forms with honeypot protection."""
 
+from axes.helpers import get_lockout_message
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
@@ -8,7 +9,6 @@ from accounts.login_lockout import is_login_locked
 from accounts.models import Clinic, UserRole
 from accounts.profile_storage import validate_profile_image
 from accounts.services import STAFF_ROLES
-from axes.helpers import get_lockout_message
 from security.honeypot import HoneypotMixin
 
 User = get_user_model()

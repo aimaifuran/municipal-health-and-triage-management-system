@@ -2,6 +2,7 @@
 
 import logging
 
+from axes.helpers import get_lockout_message
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
@@ -15,7 +16,6 @@ from django.views.generic import TemplateView
 from accounts.forms import LoginForm, ProfileDetailsForm, ProfilePasswordForm, ProfilePictureForm
 from accounts.login_lockout import is_login_locked, record_failed_login
 from accounts.profile_service import ProfileService
-from axes.helpers import get_lockout_message
 from auditlogs.models import AuditAction
 from auditlogs.services import AuditService
 

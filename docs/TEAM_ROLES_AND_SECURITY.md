@@ -25,6 +25,7 @@
 9. [End-to-end request flows](#9-end-to-end-request-flows)
 10. [Defense presentation order](#10-defense-presentation-order)
 11. [Pre-defense checklist](#11-pre-defense-checklist)
+12. [Running Bandit & pip-audit scans](#12-running-bandit--pip-audit-scans)
 
 ---
 
@@ -511,13 +512,15 @@ flowchart LR
     GHA --> DEPLOY["manage.py check --deploy"]
 ```
 
+**Detailed scan commands, Bandit findings, and panel talking points:** [Section 12](#12-running-bandit--pip-audit-scans).
+
 ### Presentation script (~6–8 min)
 
 1. **Live brute force** — wrong password ×5 on login page → single lockout message.
 2. Enter **correct** password while locked → still denied (coordinate message with Member 2 API if desired).
 3. Show **audit log** screen (`templates/dashboard/admin_audit.html`) or Django admin entries.
 4. Submit form with **honeypot** field filled → rejection.
-5. Screen-share **GitHub Actions** — green security jobs.
+5. Screen-share **GitHub Actions** — green **Bandit**, **pip-audit**, and **check --deploy** steps (see [Section 12](#12-running-bandit--pip-audit-scans)).
 6. Show `tests/test_login_lockout.py` passing locally: `pytest tests/test_login_lockout.py -v`.
 
 **Closing line:** *“We assume breach attempts on login and APIs; axes, throttles, honeypots, and audit logs give us block-and-detect without hiding failures.”*
@@ -622,13 +625,152 @@ gantt
 ### Security demo (Member 5)
 
 - [ ] `unlock_login --all` run before lockout demo (or use throwaway test email)
-- [ ] GitHub Actions green on `main`
+- [ ] GitHub Actions green on `main` (Bandit, pip-audit, `check --deploy`)
+- [ ] Bandit: **0 High** findings; medium/low reviewed ([Section 12](#12-running-bandit--pip-audit-scans))
+- [ ] pip-audit: no known CVEs on `requirements/base.txt` (show CI log if local SSL fails)
 - [ ] `pytest tests/test_login_lockout.py tests/test_api_security.py -v` passes locally
 
 ### Compliance talking points (all members)
 
 - [ ] Demo data is **fictional** — no real PHI
 - [ ] Each member can name **one control from another layer** (shows team integration)
+
+---
+
+## 12. Running Bandit & pip-audit scans
+
+Member 5 demonstrates **automated security testing** in CI and optionally on a laptop before defense.
+
+### Where it runs in CI
+
+```mermaid
+flowchart TD
+    subgraph job["GitHub Actions: test-and-security"]
+        A["checkout + pip install dev.txt"]
+        B["black · isort · flake8"]
+        C["bandit -r ."]
+        D["pip-audit -r requirements/base.txt"]
+        E["migrate + check --deploy"]
+        F["pytest"]
+    end
+    A --> B --> C --> D --> E --> F
+```
+
+Source: `.github/workflows/ci.yml` (steps **Security scan (Bandit)** and **Dependency audit**).
+
+| Tool | Purpose | Scans |
+|------|---------|--------|
+| **Bandit** | Static analysis (SAST) | Python source for unsafe patterns |
+| **pip-audit** | Dependency audit | Known CVEs in pinned packages from `requirements/base.txt` |
+
+Bandit is listed in `requirements/dev.txt` (not production dependencies).
+
+### Run locally (same as CI)
+
+**Windows (PowerShell):**
+
+```powershell
+cd "c:\Users\Windows 11\Desktop\municipal-health-and-triage-management-system"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements/dev.txt
+
+# SAST — excludes tests and virtualenv
+bandit -r . -x ./tests,./.venv,./staticfiles
+
+# JSON report (optional, for slides)
+bandit -r . -x ./tests,./.venv,./staticfiles -f json -o bandit-report.json
+
+# CVE check on production dependencies
+pip-audit -r requirements/base.txt
+```
+
+**Linux / macOS:**
+
+```bash
+pip install -r requirements/dev.txt
+bandit -r . -x ./tests,./.venv,./staticfiles
+pip-audit -r requirements/base.txt
+```
+
+**Full pipeline (optional rehearsal):**
+
+```powershell
+black --check .
+isort --check-only .
+flake8 . --max-line-length=100 --exclude=migrations,.venv,staticfiles
+bandit -r . -x ./tests,./.venv,./staticfiles
+pip-audit -r requirements/base.txt
+$env:DJANGO_SETTINGS_MODULE = "config.settings.production"
+python manage.py migrate --noinput
+python manage.py check --deploy
+pytest
+```
+
+> **Note:** CI runs `bandit ... || bandit ...` so the workflow **continues** even when Bandit reports low/medium issues. The job still prints the full report for review.
+
+### Bandit results (baseline for defense)
+
+Last scan profile: **~7,100 lines** of application code (tests excluded).
+
+| Severity | Count | Defense stance |
+|----------|------:|----------------|
+| **High** | **0** | No critical SAST findings |
+| Medium | 4 | Reviewed — see table below |
+| Low | 4 | Accepted — demo/helpers |
+
+```mermaid
+pie title Bandit findings by severity
+    "High (0)" : 0
+    "Medium (4)" : 4
+    "Low (4)" : 4
+```
+
+#### Finding review table (for the panel)
+
+| Bandit ID | Location | Severity | Explanation |
+|-----------|----------|----------|-------------|
+| B107 | `accounts/login_lockout.py` | Low | Default `password=""` argument for axes API — not a stored password |
+| B105 | `accounts/management/commands/seed_demo.py` | Low | `DEMO_PASSWORD` only for `seed_demo` — fictional accounts, not production |
+| B110 | `accounts/profile_storage.py`, `api/v1/views.py` | Low | Intentional `except: pass` on optional cleanup / blacklist edge cases |
+| B104 | `auditlogs/services.py` | Medium | `"0.0.0.0"` placeholder when client IP is missing — not server bind-all |
+| B308 / B703 | `core/templatetags/mhtms_tags.py` | Medium | `mark_safe` on fixed HTML badges; `level` is normalized text, not raw user HTML |
+
+**Panel one-liner:** *“Bandit reports zero high-severity issues; remaining items are documented false positives or dev-only seed data.”*
+
+### pip-audit
+
+| Outcome | Meaning |
+|---------|---------|
+| Exit code **0**, no output | No known vulnerabilities for pinned versions |
+| Listed CVEs | Upgrade affected package and re-run CI |
+
+**If pip-audit fails locally with SSL errors** (`CERTIFICATE_VERIFY_FAILED` on `pypi.org`):
+
+- Common on some Windows/school networks — **not a project defect**.
+- For defense: open **GitHub → Actions → latest workflow → Dependency audit** and show the green step.
+- Optional fix: run Python’s **Install certificates** launcher, or use WSL / another machine with working HTTPS.
+
+### Live demo script (Member 5 — scans segment, ~2 min)
+
+1. Open `.github/workflows/ci.yml` — point at Bandit and pip-audit steps.
+2. Open latest **green** Actions run → expand **Security scan (Bandit)** → highlight **Total issues High: 0**.
+3. Expand **Dependency audit** → show clean pip-audit (or explain any fixed CVE upgrades).
+4. Expand **Django deploy check** → `System check identified no issues` with production settings.
+5. Optional terminal: run `bandit -r . -x ./tests,./.venv` once on laptop if network allows.
+
+### Expected `check --deploy` topics (production)
+
+When `DJANGO_SETTINGS_MODULE=config.settings.production`, Django verifies settings such as:
+
+| Check area | Production intent |
+|------------|-------------------|
+| `DEBUG=False` | No stack traces to users |
+| `SECRET_KEY` | Strong, from environment |
+| HTTPS / cookies | Secure session and CSRF cookies |
+| HSTS / SSL redirect | Transport security |
+
+Run after migrations in CI (same as pipeline step).
 
 ---
 
@@ -640,7 +782,7 @@ gantt
 | 2 | `api/v1/`, `api/v1/auth_serializers.py`, `docs/postman/` |
 | 3 | `security/access.py`, `consultations/services.py`, `tests/test_api_security.py` |
 | 4 | `templates/`, `dashboard/views.py`, `core/templatetags/mhtms_tags.py` |
-| 5 | `accounts/login_lockout.py`, `config/settings/base.py` (AXES), `.github/workflows/ci.yml`, `auditlogs/` |
+| 5 | `accounts/login_lockout.py`, `config/settings/base.py` (AXES), `.github/workflows/ci.yml`, `auditlogs/`, [§12 Bandit/pip-audit](#12-running-bandit--pip-audit-scans) |
 
 ---
 

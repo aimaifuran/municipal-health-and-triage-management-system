@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
+from axes.handlers.proxy import AxesProxyHandler
+from axes.helpers import get_lockout_message
 from django.contrib.auth import get_user_model
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-
-from axes.handlers.proxy import AxesProxyHandler
-from axes.helpers import get_lockout_message
 
 User = get_user_model()
 

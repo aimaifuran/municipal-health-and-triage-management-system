@@ -154,6 +154,7 @@ Quick overview:
 - Brute-force lockout via django-axes
 - Separate audit and security log streams
 - CI runs Bandit, pip-audit, and `manage.py check --deploy`
+- **Run scans & defense talking points:** [docs/TEAM_ROLES_AND_SECURITY.md §12](docs/TEAM_ROLES_AND_SECURITY.md#12-running-bandit--pip-audit-scans)
 
 ## Testing
 
@@ -168,3 +169,4 @@ bandit -r . -x ./tests
 ## License
 
 Proprietary — Municipal Government Use
+
