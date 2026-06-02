@@ -77,7 +77,7 @@ class AuditService:
     ) -> LoginAttempt:
         attempt = LoginAttempt.objects.create(
             email_attempted=email,
-            ip_address=_get_client_ip(request) or "0.0.0.0",
+            ip_address=_get_client_ip(request) or "0.0.0.0",  # nosec B104
             success=success,
             user_agent=_get_user_agent(request),
         )

@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import logging
+
 import cloudinary.uploader
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from common.cloudinary_utils import ensure_cloudinary_configured
+
+logger = logging.getLogger(__name__)
 
 PROFILE_MAX_MB = 5
 PROFILE_ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
@@ -43,5 +47,5 @@ def delete_profile_picture(public_id: str) -> None:
     try:
         ensure_cloudinary_configured()
         cloudinary.uploader.destroy(public_id, resource_type="image")
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("Cloudinary delete failed for %s: %s", public_id, exc)

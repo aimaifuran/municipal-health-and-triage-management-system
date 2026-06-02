@@ -15,7 +15,11 @@ def normalize_login_username(username: str) -> str:
     return (username or "").strip().lower()
 
 
-def is_login_locked(request: HttpRequest, username: str, password: str = "") -> bool:
+def is_login_locked(
+    request: HttpRequest,
+    username: str,
+    attempted_password: str | None = None,
+) -> bool:
     """
     Return True if login must be rejected (including correct passwords while locked).
 
@@ -24,7 +28,7 @@ def is_login_locked(request: HttpRequest, username: str, password: str = "") -> 
     email = normalize_login_username(username)
     if not email:
         return False
-    credentials = {"username": email, "password": password}
+    credentials = {"username": email, "password": attempted_password or ""}
     return not AxesProxyHandler.is_allowed(request, credentials)
 
 

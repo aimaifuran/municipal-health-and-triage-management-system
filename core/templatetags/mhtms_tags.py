@@ -1,7 +1,7 @@
 """Reusable template tags for severity, priority, and critical patients."""
 
 from django import template
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 register = template.Library()
 
@@ -16,9 +16,12 @@ SEVERITY_STYLES = {
 def severity_badge(level: str) -> str:
     classes, extra = SEVERITY_STYLES.get(level.lower(), ("bg-gray-100 text-gray-800", ""))
     label = level.replace("_", " ").title()
-    return mark_safe(
-        f'<span class="inline-flex items-center px-2.5 py-0.5 rounded-full '
-        f'text-xs font-medium border {classes} {extra}">{label}</span>'
+    return format_html(
+        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full '
+        'text-xs font-medium border {} {}">{}</span>',
+        classes,
+        extra,
+        label,
     )
 
 
@@ -35,7 +38,7 @@ def priority_color(score: int) -> str:
 def emergency_indicator(is_critical: bool) -> str:
     if not is_critical:
         return ""
-    return mark_safe(
+    return format_html(
         '<span class="relative flex h-3 w-3" aria-label="Emergency">'
         '<span class="animate-ping absolute inline-flex h-full w-full '
         'rounded-full bg-red-400 opacity-75"></span>'

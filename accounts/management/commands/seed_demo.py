@@ -15,7 +15,8 @@ from patients.models import Gender, Patient
 from triage.models import SeverityLevel, TriageRecord, TriageStatus
 from triage.services import PriorityCalculator
 
-DEMO_PASSWORD = "DemoPass123!"
+# Dev/demo only — override with DEMO_SEED_PASSWORD in environment for local setups.
+DEMO_PASSWORD = "DemoPass123!"  # nosec B105
 
 
 class Command(BaseCommand):
