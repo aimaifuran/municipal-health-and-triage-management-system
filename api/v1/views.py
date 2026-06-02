@@ -1,4 +1,5 @@
 """API v1 viewsets and views."""
+
 from __future__ import annotations
 
 from django.shortcuts import get_object_or_404
@@ -7,6 +8,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from accounts.models import UserRole
 from analytics.services import AnalyticsService
@@ -27,8 +29,6 @@ from consultations.models import Consultation
 from consultations.services import ConsultationService
 from patients.models import Patient
 from patients.services import PatientService
-from rest_framework_simplejwt.tokens import RefreshToken
-
 from security.access import AccessControlService
 from security.permissions import (
     DenyConsultationForReceptionist,
@@ -51,7 +51,9 @@ class ProfileView(generics.RetrieveAPIView):
         return self.request.user
 
 
-@extend_schema(tags=["Authentication"], request=LogoutSerializer, responses=MessageResponseSerializer)
+@extend_schema(
+    tags=["Authentication"], request=LogoutSerializer, responses=MessageResponseSerializer
+)
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LogoutSerializer
@@ -140,10 +142,14 @@ class PatientQueueView(generics.ListAPIView):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Patient.objects.none()
-        qs = Patient.objects.filter(
-            triage_records__is_active=True,
-            triage_records__triage_status__in=["waiting", "escalated", "in_progress"],
-        ).select_related("clinic").distinct()
+        qs = (
+            Patient.objects.filter(
+                triage_records__is_active=True,
+                triage_records__triage_status__in=["waiting", "escalated", "in_progress"],
+            )
+            .select_related("clinic")
+            .distinct()
+        )
         return AccessControlService.filter_patients_for_user(self.request.user, qs)
 
 
@@ -182,10 +188,19 @@ class TriageViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         record = self.get_object()
-        vitals = {k: v for k, v in request.data.items() if k in (
-            "blood_pressure", "heart_rate", "respiratory_rate",
-            "oxygen_saturation", "body_temperature", "symptoms",
-        )}
+        vitals = {
+            k: v
+            for k, v in request.data.items()
+            if k
+            in (
+                "blood_pressure",
+                "heart_rate",
+                "respiratory_rate",
+                "oxygen_saturation",
+                "body_temperature",
+                "symptoms",
+            )
+        }
         if "severity_level" in request.data:
             record.severity_level = request.data["severity_level"]
             record.save(update_fields=["severity_level", "updated_at"])
@@ -260,11 +275,13 @@ class BulkDischargeView(APIView):
             request.user,
             request,
         )
-        return Response({
-            "success": True,
-            "message": f"Bulk discharge completed: {len(results['success'])} succeeded.",
-            "results": results,
-        })
+        return Response(
+            {
+                "success": True,
+                "message": f"Bulk discharge completed: {len(results['success'])} succeeded.",
+                "results": results,
+            }
+        )
 
 
 @extend_schema(tags=["Analytics"])
@@ -291,6 +308,7 @@ class RegionalStatisticsView(APIView):
 @extend_schema(tags=["Public"], responses=PublicHealthStatsSerializer)
 class PublicMaskedStatsView(APIView):
     """Unauthenticated public API — masked data only."""
+
     permission_classes = [AllowAny]
     authentication_classes = []
 

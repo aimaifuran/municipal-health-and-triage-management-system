@@ -1,4 +1,5 @@
 """Lightweight health checks for load balancers (Render, etc.)."""
+
 from __future__ import annotations
 
 from django.db import connection

@@ -45,7 +45,10 @@ class TestDischargeSummary:
         assert b"Print" in response.content
         assert b"Close" in response.content
         assert b'data-action="close-discharged-detail"' in response.content
-        assert reverse("dashboard:doctor-discharged-summary-download", args=[consultation.id]).encode() in response.content
+        assert (
+            reverse("dashboard:doctor-discharged-summary-download", args=[consultation.id]).encode()
+            in response.content
+        )
 
     def test_doctor_can_download_pdf(self, client, doctor, discharged_consultation):
         consultation, _ = discharged_consultation
@@ -56,7 +59,9 @@ class TestDischargeSummary:
         assert response["Content-Type"] == "application/pdf"
         assert response.content[:4] == b"%PDF"
         assert "attachment" in response["Content-Disposition"]
-        assert consultation.patient.patient_number.replace("/", "-") in response["Content-Disposition"]
+        assert (
+            consultation.patient.patient_number.replace("/", "-") in response["Content-Disposition"]
+        )
 
     def test_nurse_can_download_pdf(self, client, nurse, discharged_consultation):
         consultation, _ = discharged_consultation
@@ -70,7 +75,9 @@ class TestDischargeSummary:
     def test_print_view_renders_summary(self, client, doctor, discharged_consultation):
         consultation, _ = discharged_consultation
         client.force_login(doctor)
-        response = client.get(reverse("dashboard:doctor-discharged-summary-print", args=[consultation.id]))
+        response = client.get(
+            reverse("dashboard:doctor-discharged-summary-print", args=[consultation.id])
+        )
         assert response.status_code == 200
         assert b"OUTPATIENT DISCHARGE SUMMARY" in response.content
         assert consultation.diagnosis.encode() in response.content

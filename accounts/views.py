@@ -1,4 +1,5 @@
 """Authentication and profile views."""
+
 import logging
 
 from django.conf import settings
@@ -11,10 +12,9 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
-from auditlogs.models import AuditAction
-
 from accounts.forms import LoginForm, ProfileDetailsForm, ProfilePasswordForm, ProfilePictureForm
 from accounts.profile_service import ProfileService
+from auditlogs.models import AuditAction
 from auditlogs.services import AuditService
 
 logger = logging.getLogger(__name__)

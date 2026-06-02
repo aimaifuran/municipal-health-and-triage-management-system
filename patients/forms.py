@@ -1,4 +1,5 @@
 """Patient registration forms for dashboard staff."""
+
 from __future__ import annotations
 
 from django import forms
@@ -20,9 +21,15 @@ class PatientRegistrationForm(forms.ModelForm):
             "emergency_contact",
         )
         widgets = {
-            "first_name": forms.TextInput(attrs={"class": "form-input", "autocomplete": "given-name"}),
-            "middle_name": forms.TextInput(attrs={"class": "form-input", "autocomplete": "additional-name"}),
-            "last_name": forms.TextInput(attrs={"class": "form-input", "autocomplete": "family-name"}),
+            "first_name": forms.TextInput(
+                attrs={"class": "form-input", "autocomplete": "given-name"}
+            ),
+            "middle_name": forms.TextInput(
+                attrs={"class": "form-input", "autocomplete": "additional-name"}
+            ),
+            "last_name": forms.TextInput(
+                attrs={"class": "form-input", "autocomplete": "family-name"}
+            ),
             "birth_date": forms.DateInput(attrs={"class": "form-input", "type": "date"}),
             "gender": forms.Select(attrs={"class": "form-input"}),
             "address": forms.Textarea(attrs={"class": "form-input", "rows": 2}),

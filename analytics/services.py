@@ -1,4 +1,5 @@
 """Analytics aggregation services — no PHI in public methods."""
+
 from __future__ import annotations
 
 from django.db.models import Count, Q
@@ -54,15 +55,18 @@ class AnalyticsService:
             patient__clinic_id__in=clinic_ids,
             is_active=True,
         ).count()
-        respiratory = TriageRecord.objects.filter(
-            patient__clinic_id__in=clinic_ids,
-            is_active=True,
-            symptoms__icontains="cough",
-        ).count() + TriageRecord.objects.filter(
-            patient__clinic_id__in=clinic_ids,
-            is_active=True,
-            symptoms__icontains="breath",
-        ).count()
+        respiratory = (
+            TriageRecord.objects.filter(
+                patient__clinic_id__in=clinic_ids,
+                is_active=True,
+                symptoms__icontains="cough",
+            ).count()
+            + TriageRecord.objects.filter(
+                patient__clinic_id__in=clinic_ids,
+                is_active=True,
+                symptoms__icontains="breath",
+            ).count()
+        )
         return {
             "region": region or "All Regions",
             "clinic_count": clinic_count,

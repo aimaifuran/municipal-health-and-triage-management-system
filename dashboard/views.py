@@ -1,4 +1,5 @@
 """Role-based dashboard views."""
+
 from datetime import timedelta
 
 from django.contrib import messages
@@ -6,18 +7,17 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Exists, OuterRef, Prefetch, Subquery
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
-from django.utils.decorators import method_decorator
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
 from accounts.forms import ClinicForm, StaffUserForm
 from accounts.models import Clinic, User, UserRole
-from accounts.services import AdminAccountService, STAFF_ROLES
+from accounts.services import STAFF_ROLES, AdminAccountService
 from auditlogs.models import AuditLog, LoginAttempt
-from common.mixins import ClinicScopedMixin, DoctorRequiredMixin, NurseRequiredMixin, SuperAdminRequiredMixin
 from common.list_filters import (
     ListScope,
     apply_audit_list_filters,
@@ -31,6 +31,12 @@ from common.list_filters import (
     table_filters_context,
 )
 from common.list_views import ListFilterPostView
+from common.mixins import (
+    ClinicScopedMixin,
+    DoctorRequiredMixin,
+    NurseRequiredMixin,
+    SuperAdminRequiredMixin,
+)
 from common.pagination import (
     AUDIT_PER_PAGE,
     AWAITING_PER_PAGE,
@@ -55,6 +61,7 @@ from consultations.ai_consultation import (
 from consultations.forms import ConsultationRecordForm
 from consultations.models import Consultation
 from consultations.services import ConsultationService
+from dashboard.admin_analytics import build_admin_dashboard_analytics
 from dashboard.discharge_summary import (
     build_discharge_summary_context,
     discharge_summary_filename,
@@ -70,8 +77,6 @@ from security.access import AccessControlService
 from triage.forms import TriageVitalsForm
 from triage.models import TriageRecord
 from triage.services import TriageService
-
-from dashboard.admin_analytics import build_admin_dashboard_analytics
 
 
 def _filter_oob(request) -> bool:
@@ -139,10 +144,15 @@ def _doctor_discharged_consultations(user, request):
         "patient__triage_records",
         queryset=TriageRecord.objects.order_by("-created_at"),
     )
-    qs = AccessControlService.filter_consultations_for_user(
-        user,
-        Consultation.objects.filter(admitted=True, discharged=True),
-    ).select_related("patient").prefetch_related(triage_prefetch).order_by("-discharged_at")
+    qs = (
+        AccessControlService.filter_consultations_for_user(
+            user,
+            Consultation.objects.filter(admitted=True, discharged=True),
+        )
+        .select_related("patient")
+        .prefetch_related(triage_prefetch)
+        .order_by("-discharged_at")
+    )
     scope_filters = get_scope_filters(request, ListScope.DISCHARGED)
     return apply_consultation_list_filters(qs, scope_filters)
 
@@ -162,7 +172,9 @@ def _doctor_discharged_table_context(request) -> dict:
         "page_param": "discharged_page",
         "filter_form_id": "discharged-filters-form",
     }
-    ctx.update(table_filters_context(request, ListScope.DISCHARGED, context_key="discharged_table_filters"))
+    ctx.update(
+        table_filters_context(request, ListScope.DISCHARGED, context_key="discharged_table_filters")
+    )
     ctx["table_filters"] = ctx["discharged_table_filters"]
     return ctx
 
@@ -203,7 +215,9 @@ def _awaiting_table_context(request) -> dict:
         "page_param": "awaiting_page",
         "filter_form_id": "awaiting-filters-form",
     }
-    ctx.update(table_filters_context(request, ListScope.AWAITING, context_key="awaiting_table_filters"))
+    ctx.update(
+        table_filters_context(request, ListScope.AWAITING, context_key="awaiting_table_filters")
+    )
     return ctx
 
 
@@ -257,7 +271,9 @@ class DashboardHomeView(LoginRequiredMixin, TemplateView):
         queue_page = _paginated_queue(request, user)
         ctx["queue_page"] = queue_page
         ctx["queue"] = queue_page.object_list
-        ctx.update(table_filters_context(request, ListScope.QUEUE, context_key="queue_table_filters"))
+        ctx.update(
+            table_filters_context(request, ListScope.QUEUE, context_key="queue_table_filters")
+        )
         ctx["queue_partial_url"] = reverse("dashboard:queue-partial")
         ctx["page_param"] = "queue_page"
         ctx["filter_form_id"] = "queue-filters-form"
@@ -300,28 +316,38 @@ def _receptionist_patients_context(request) -> dict:
         "page_param": "patients_page",
         "filter_form_id": "patients-filters-form",
     }
-    ctx.update(table_filters_context(request, ListScope.PATIENTS, context_key="patients_table_filters"))
+    ctx.update(
+        table_filters_context(request, ListScope.PATIENTS, context_key="patients_table_filters")
+    )
     return ctx
 
 
 def _doctor_discharge_context(request, results=None, readmit_results=None) -> dict:
     user = request.user
     discharge_scope = get_scope_filters(request, ListScope.DISCHARGE)
-    discharge_qs = AccessControlService.filter_consultations_for_user(
-        user,
-        Consultation.objects.filter(admitted=True, discharged=False),
-    ).select_related("patient").order_by("-admitted_at", "-created_at")
+    discharge_qs = (
+        AccessControlService.filter_consultations_for_user(
+            user,
+            Consultation.objects.filter(admitted=True, discharged=False),
+        )
+        .select_related("patient")
+        .order_by("-admitted_at", "-created_at")
+    )
     discharge_qs = apply_consultation_list_filters(discharge_qs, discharge_scope)
     discharged_since = timezone.now() - timedelta(hours=READMIT_LOOKBACK_HOURS)
     readmit_scope = get_scope_filters(request, ListScope.READMIT)
-    readmit_qs = AccessControlService.filter_consultations_for_user(
-        user,
-        Consultation.objects.filter(
-            admitted=True,
-            discharged=True,
-            discharged_at__gte=discharged_since,
-        ),
-    ).select_related("patient").order_by("-discharged_at")
+    readmit_qs = (
+        AccessControlService.filter_consultations_for_user(
+            user,
+            Consultation.objects.filter(
+                admitted=True,
+                discharged=True,
+                discharged_at__gte=discharged_since,
+            ),
+        )
+        .select_related("patient")
+        .order_by("-discharged_at")
+    )
     readmit_qs = apply_consultation_list_filters(readmit_qs, readmit_scope)
     discharge_page = paginate_queryset(
         request,
@@ -351,7 +377,9 @@ def _doctor_discharge_context(request, results=None, readmit_results=None) -> di
         ctx["results"] = results
     if readmit_results is not None:
         ctx["readmit_results"] = readmit_results
-    ctx.update(table_filters_context(request, ListScope.DISCHARGE, context_key="discharge_table_filters"))
+    ctx.update(
+        table_filters_context(request, ListScope.DISCHARGE, context_key="discharge_table_filters")
+    )
     ctx["table_filters"] = ctx["discharge_table_filters"]
     return ctx
 
@@ -364,7 +392,11 @@ class DoctorBulkDischargeView(DoctorRequiredMixin, View):
     def post(self, request):
         ids = request.POST.getlist("consultation_ids")
         if not ids:
-            results = {"success": [], "failed": [], "notice": "Select at least one patient to discharge."}
+            results = {
+                "success": [],
+                "failed": [],
+                "notice": "Select at least one patient to discharge.",
+            }
         else:
             results = ConsultationService.bulk_discharge(ids, request.user, request)
 
@@ -434,11 +466,11 @@ class QueuePartialView(LoginRequiredMixin, ClinicScopedMixin, ListFilterPostView
             "page_param": "queue_page",
             "filter_form_id": "queue-filters-form",
         }
-        ctx.update(table_filters_context(request, ListScope.QUEUE, context_key="queue_table_filters"))
+        ctx.update(
+            table_filters_context(request, ListScope.QUEUE, context_key="queue_table_filters")
+        )
         ctx["queue_hx_target"] = (
-            "#nurse-queue-panel"
-            if request.user.role == UserRole.NURSE
-            else "#queue-container"
+            "#nurse-queue-panel" if request.user.role == UserRole.NURSE else "#queue-container"
         )
         ctx["queue_partial_url"] = reverse("dashboard:queue-partial")
         ctx["filter_form_id"] = "queue-filters-form"
@@ -564,7 +596,9 @@ class DoctorQueueConsultationSubmitView(DoctorRequiredMixin, View):
                 "queue_hx_target": "#queue-container",
             }
             ctx.update(_doctor_discharge_context(request))
-            ctx.update(table_filters_context(request, ListScope.QUEUE, context_key="queue_table_filters"))
+            ctx.update(
+                table_filters_context(request, ListScope.QUEUE, context_key="queue_table_filters")
+            )
             response = render(
                 request,
                 "dashboard/partials/doctor_consultation_success.html",
@@ -646,7 +680,9 @@ class NurseAwaitingPartialView(NurseRequiredMixin, ListFilterPostView):
     def _render(self, request):
         ctx = _awaiting_table_context(request)
         ctx["filter_oob"] = _filter_oob(request)
-        return _htmx_no_cache(render(request, "dashboard/partials/awaiting_patients_table.html", ctx))
+        return _htmx_no_cache(
+            render(request, "dashboard/partials/awaiting_patients_table.html", ctx)
+        )
 
 
 class ReceptionistPatientsPartialView(LoginRequiredMixin, ListFilterPostView):
@@ -710,8 +746,12 @@ class DoctorDischargedPatientSummaryDownloadView(LoginRequiredMixin, View):
             return redirect("dashboard:unauthorized")
         consultation = get_discharged_consultation(request.user, pk, request)
         summary = build_discharge_summary_context(consultation)
-        response = HttpResponse(render_discharge_summary_pdf(summary), content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="{discharge_summary_filename(summary)}"'
+        response = HttpResponse(
+            render_discharge_summary_pdf(summary), content_type="application/pdf"
+        )
+        response["Content-Disposition"] = (
+            f'attachment; filename="{discharge_summary_filename(summary)}"'
+        )
         return response
 
 
@@ -774,7 +814,9 @@ def _admin_clinics_context(request) -> dict:
 
 def _admin_staff_context(request) -> dict:
     role_filter = request.GET.get("role", "all")
-    staff_qs = User.objects.filter(role__in=STAFF_ROLES).select_related("clinic").order_by("role", "email")
+    staff_qs = (
+        User.objects.filter(role__in=STAFF_ROLES).select_related("clinic").order_by("role", "email")
+    )
     if role_filter in STAFF_ROLES:
         staff_qs = staff_qs.filter(role=role_filter)
     scope_filters = get_scope_filters(request, ListScope.STAFF)
@@ -872,9 +914,7 @@ class AdminClinicSaveView(SuperAdminRequiredMixin, View):
 class AdminStaffSaveView(SuperAdminRequiredMixin, View):
     def post(self, request):
         staff_id = request.POST.get("staff_id")
-        instance = (
-            get_object_or_404(User, pk=staff_id, role__in=STAFF_ROLES) if staff_id else None
-        )
+        instance = get_object_or_404(User, pk=staff_id, role__in=STAFF_ROLES) if staff_id else None
         form = StaffUserForm(request.POST, instance=instance)
         if not form.is_valid():
             ctx = _admin_staff_context(request)

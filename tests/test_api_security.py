@@ -7,7 +7,9 @@ from patients.models import Patient
 
 @pytest.mark.django_db
 class TestAntiIDOR:
-    def test_doctor_cannot_access_unassigned_patient(self, api_client, doctor, clinic, receptionist):
+    def test_doctor_cannot_access_unassigned_patient(
+        self, api_client, doctor, clinic, receptionist
+    ):
         other = Patient.objects.create(
             patient_number="PAT-OTHER-001",
             first_name="Ana",

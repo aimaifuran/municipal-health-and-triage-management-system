@@ -1,4 +1,5 @@
 """Seed comprehensive sample data for local testing and demos."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -66,7 +67,9 @@ class Command(BaseCommand):
         Consultation.objects.filter(patient__in=patients).delete()
         DoctorPatientAssignment.objects.filter(patient__in=patients).delete()
         deleted, _ = patients.delete()
-        self.stdout.write(self.style.WARNING(f"Removed {deleted} sample patient(s) and related records."))
+        self.stdout.write(
+            self.style.WARNING(f"Removed {deleted} sample patient(s) and related records.")
+        )
 
     def _seed_clinics(self) -> dict[str, Clinic]:
         specs = [
@@ -152,34 +155,242 @@ class Command(BaseCommand):
         reception = users["reception"]
         patient_specs = [
             # Carigara — primary demo clinic (nurse@mhtms.gov.ph)
-            ("PAT-SAMPLE-001", "Maria", "Santos", "1992-03-10", Gender.FEMALE, clinics["carigara"], "Fever, cough"),
-            ("PAT-SAMPLE-002", "Juan", "Dela Cruz", "1985-07-22", Gender.MALE, clinics["carigara"], "Chest pain"),
-            ("PAT-SAMPLE-003", "Ana", "Reyes", "2018-11-05", Gender.FEMALE, clinics["carigara"], "High fever"),
-            ("PAT-SAMPLE-004", "Pedro", "Garcia", "1958-01-30", Gender.MALE, clinics["carigara"], "Difficulty breathing"),
-            ("PAT-SAMPLE-005", "Liza", "Mendoza", "1998-09-14", Gender.FEMALE, clinics["carigara"], "Headache"),
-            ("PAT-SAMPLE-011", "Roberto", "Navarro", "1959-06-15", Gender.MALE, clinics["carigara"], "Chest pain, cold sweats"),
-            ("PAT-SAMPLE-012", "Corazon", "Bautista", "1967-04-03", Gender.FEMALE, clinics["carigara"], "Stroke symptoms"),
-            ("PAT-SAMPLE-013", "Ramon", "Castillo", "1964-11-20", Gender.MALE, clinics["carigara"], "Hypertension"),
-            ("PAT-SAMPLE-014", "Grace", "Flores", "1981-08-27", Gender.FEMALE, clinics["carigara"], "Cough"),
-            ("PAT-SAMPLE-015", "Jenny", "Aquino", "1996-02-14", Gender.FEMALE, clinics["carigara"], "Pregnancy"),
-            ("PAT-SAMPLE-016", "Teodoro", "Dizon", "1951-12-08", Gender.MALE, clinics["carigara"], "Weakness"),
-            ("PAT-SAMPLE-017", "Mark", "Salazar", "1990-07-19", Gender.MALE, clinics["carigara"], "Severe pain"),
-            ("PAT-SAMPLE-018", "Sophie", "Yu", "2021-05-22", Gender.FEMALE, clinics["carigara"], "Pediatric URI"),
-            ("PAT-SAMPLE-019", "Paul", "Chua", "1995-10-30", Gender.MALE, clinics["carigara"], "Follow-up"),
-            ("PAT-SAMPLE-020", "Darwin", "Perez", "1984-03-11", Gender.MALE, clinics["carigara"], "Trauma"),
-            ("PAT-SAMPLE-021", "Hannah", "Ong", "2000-01-25", Gender.FEMALE, clinics["carigara"], "Walk-in registration"),
-            ("PAT-SAMPLE-022", "Kevin", "Sy", "1987-09-09", Gender.MALE, clinics["carigara"], "Walk-in registration"),
-            ("PAT-SAMPLE-023", "Diana", "Co", "1978-12-02", Gender.FEMALE, clinics["carigara"], "Palpitations"),
-            ("PAT-DEMO-001", "Sofia", "Ramos", "1993-05-12", Gender.FEMALE, clinics["carigara"], "Mild cold"),
+            (
+                "PAT-SAMPLE-001",
+                "Maria",
+                "Santos",
+                "1992-03-10",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Fever, cough",
+            ),
+            (
+                "PAT-SAMPLE-002",
+                "Juan",
+                "Dela Cruz",
+                "1985-07-22",
+                Gender.MALE,
+                clinics["carigara"],
+                "Chest pain",
+            ),
+            (
+                "PAT-SAMPLE-003",
+                "Ana",
+                "Reyes",
+                "2018-11-05",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "High fever",
+            ),
+            (
+                "PAT-SAMPLE-004",
+                "Pedro",
+                "Garcia",
+                "1958-01-30",
+                Gender.MALE,
+                clinics["carigara"],
+                "Difficulty breathing",
+            ),
+            (
+                "PAT-SAMPLE-005",
+                "Liza",
+                "Mendoza",
+                "1998-09-14",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Headache",
+            ),
+            (
+                "PAT-SAMPLE-011",
+                "Roberto",
+                "Navarro",
+                "1959-06-15",
+                Gender.MALE,
+                clinics["carigara"],
+                "Chest pain, cold sweats",
+            ),
+            (
+                "PAT-SAMPLE-012",
+                "Corazon",
+                "Bautista",
+                "1967-04-03",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Stroke symptoms",
+            ),
+            (
+                "PAT-SAMPLE-013",
+                "Ramon",
+                "Castillo",
+                "1964-11-20",
+                Gender.MALE,
+                clinics["carigara"],
+                "Hypertension",
+            ),
+            (
+                "PAT-SAMPLE-014",
+                "Grace",
+                "Flores",
+                "1981-08-27",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Cough",
+            ),
+            (
+                "PAT-SAMPLE-015",
+                "Jenny",
+                "Aquino",
+                "1996-02-14",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Pregnancy",
+            ),
+            (
+                "PAT-SAMPLE-016",
+                "Teodoro",
+                "Dizon",
+                "1951-12-08",
+                Gender.MALE,
+                clinics["carigara"],
+                "Weakness",
+            ),
+            (
+                "PAT-SAMPLE-017",
+                "Mark",
+                "Salazar",
+                "1990-07-19",
+                Gender.MALE,
+                clinics["carigara"],
+                "Severe pain",
+            ),
+            (
+                "PAT-SAMPLE-018",
+                "Sophie",
+                "Yu",
+                "2021-05-22",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Pediatric URI",
+            ),
+            (
+                "PAT-SAMPLE-019",
+                "Paul",
+                "Chua",
+                "1995-10-30",
+                Gender.MALE,
+                clinics["carigara"],
+                "Follow-up",
+            ),
+            (
+                "PAT-SAMPLE-020",
+                "Darwin",
+                "Perez",
+                "1984-03-11",
+                Gender.MALE,
+                clinics["carigara"],
+                "Trauma",
+            ),
+            (
+                "PAT-SAMPLE-021",
+                "Hannah",
+                "Ong",
+                "2000-01-25",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Walk-in registration",
+            ),
+            (
+                "PAT-SAMPLE-022",
+                "Kevin",
+                "Sy",
+                "1987-09-09",
+                Gender.MALE,
+                clinics["carigara"],
+                "Walk-in registration",
+            ),
+            (
+                "PAT-SAMPLE-023",
+                "Diana",
+                "Co",
+                "1978-12-02",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Palpitations",
+            ),
+            (
+                "PAT-DEMO-001",
+                "Sofia",
+                "Ramos",
+                "1993-05-12",
+                Gender.FEMALE,
+                clinics["carigara"],
+                "Mild cold",
+            ),
             # Barugo
-            ("PAT-SAMPLE-006", "Carlos", "Lim", "1960-12-01", Gender.MALE, clinics["barugo"], "Hypertension follow-up"),
-            ("PAT-SAMPLE-007", "Rosa", "Tan", "1995-04-18", Gender.FEMALE, clinics["barugo"], "Abdominal pain"),
-            ("PAT-SAMPLE-008", "Miguel", "Torres", "2005-06-25", Gender.MALE, clinics["barugo"], "Sprain"),
-            ("PAT-SAMPLE-024", "Alma", "Gutierrez", "1968-07-07", Gender.FEMALE, clinics["barugo"], "Diabetes follow-up"),
-            ("PAT-SAMPLE-025", "Victor", "Ramos", "1975-03-16", Gender.MALE, clinics["barugo"], "Unconscious"),
+            (
+                "PAT-SAMPLE-006",
+                "Carlos",
+                "Lim",
+                "1960-12-01",
+                Gender.MALE,
+                clinics["barugo"],
+                "Hypertension follow-up",
+            ),
+            (
+                "PAT-SAMPLE-007",
+                "Rosa",
+                "Tan",
+                "1995-04-18",
+                Gender.FEMALE,
+                clinics["barugo"],
+                "Abdominal pain",
+            ),
+            (
+                "PAT-SAMPLE-008",
+                "Miguel",
+                "Torres",
+                "2005-06-25",
+                Gender.MALE,
+                clinics["barugo"],
+                "Sprain",
+            ),
+            (
+                "PAT-SAMPLE-024",
+                "Alma",
+                "Gutierrez",
+                "1968-07-07",
+                Gender.FEMALE,
+                clinics["barugo"],
+                "Diabetes follow-up",
+            ),
+            (
+                "PAT-SAMPLE-025",
+                "Victor",
+                "Ramos",
+                "1975-03-16",
+                Gender.MALE,
+                clinics["barugo"],
+                "Unconscious",
+            ),
             # Capoocan
-            ("PAT-SAMPLE-009", "Elena", "Villanueva", "1988-08-08", Gender.FEMALE, clinics["capoocan"], "Prenatal check"),
-            ("PAT-SAMPLE-010", "James", "Go", "1990-02-17", Gender.MALE, clinics["capoocan"], "Sore throat"),
+            (
+                "PAT-SAMPLE-009",
+                "Elena",
+                "Villanueva",
+                "1988-08-08",
+                Gender.FEMALE,
+                clinics["capoocan"],
+                "Prenatal check",
+            ),
+            (
+                "PAT-SAMPLE-010",
+                "James",
+                "Go",
+                "1990-02-17",
+                Gender.MALE,
+                clinics["capoocan"],
+                "Sore throat",
+            ),
         ]
         patients: list[Patient] = []
         for num, first, last, bday, gender, clinic, _notes in patient_specs:
@@ -226,22 +437,71 @@ class Command(BaseCommand):
         triage_specs: dict[str, tuple[str, int, int, str, str, str]] = {
             # Legacy / baseline cases
             "PAT-SAMPLE-001": ("120/80", 72, 16, "98.0", "36.8", "Mild headache and fatigue"),
-            "PAT-SAMPLE-002": ("145/95", 110, 22, "91.0", "38.5", "Chest pain, difficulty breathing"),
+            "PAT-SAMPLE-002": (
+                "145/95",
+                110,
+                22,
+                "91.0",
+                "38.5",
+                "Chest pain, difficulty breathing",
+            ),
             "PAT-SAMPLE-003": ("118/76", 88, 18, "96.5", "39.2", "High fever, cough, body aches"),
-            "PAT-SAMPLE-004": ("88/60", 132, 32, "84.0", "38.9", "Chest pain, difficulty breathing, cold sweats"),
+            "PAT-SAMPLE-004": (
+                "88/60",
+                132,
+                32,
+                "84.0",
+                "38.9",
+                "Chest pain, difficulty breathing, cold sweats",
+            ),
             "PAT-SAMPLE-005": ("122/82", 76, 14, "99.0", "36.6", "Routine check, mild sore throat"),
             "PAT-DEMO-001": ("120/78", 80, 17, "98.0", "37.0", "Runny nose, mild cough"),
             # Clinical severity showcase (see docs/TRIAGE_SEVERITY_EVALUATION.md §10)
-            "PAT-SAMPLE-011": ("88/60", 132, 32, "84.0", "38.9", "Chest pain, difficulty breathing, cold sweats"),
-            "PAT-SAMPLE-012": ("178/98", 96, 18, "95.0", "37.1", "Slurred speech and one-sided weakness"),
+            "PAT-SAMPLE-011": (
+                "88/60",
+                132,
+                32,
+                "84.0",
+                "38.9",
+                "Chest pain, difficulty breathing, cold sweats",
+            ),
+            "PAT-SAMPLE-012": (
+                "178/98",
+                96,
+                18,
+                "95.0",
+                "37.1",
+                "Slurred speech and one-sided weakness",
+            ),
             "PAT-SAMPLE-013": ("186/102", 116, 24, "93.0", "37.4", "Chest pain and cold sweats"),
             "PAT-SAMPLE-014": ("152/94", 124, 26, "91.0", "37.6", "Persistent cough and weakness"),
-            "PAT-SAMPLE-015": ("142/90", 110, 22, "95.0", "37.0", "Pregnant patient with seizure and bleeding"),
-            "PAT-SAMPLE-016": ("148/92", 108, 22, "94.0", "39.2", "Elderly with dizziness and weakness"),
+            "PAT-SAMPLE-015": (
+                "142/90",
+                110,
+                22,
+                "95.0",
+                "37.0",
+                "Pregnant patient with seizure and bleeding",
+            ),
+            "PAT-SAMPLE-016": (
+                "148/92",
+                108,
+                22,
+                "94.0",
+                "39.2",
+                "Elderly with dizziness and weakness",
+            ),
             "PAT-SAMPLE-017": ("166/100", 104, 22, "92.0", "38.4", "Severe pain and dizziness"),
             "PAT-SAMPLE-018": ("102/68", 102, 24, "97.0", "37.5", "Runny nose and mild cough"),
             "PAT-SAMPLE-019": ("118/78", 74, 16, "99.0", "36.8", "Mild headache"),
-            "PAT-SAMPLE-020": ("130/85", 112, 20, "96.0", "37.2", "Major trauma with severe bleeding"),
+            "PAT-SAMPLE-020": (
+                "130/85",
+                112,
+                20,
+                "96.0",
+                "37.2",
+                "Major trauma with severe bleeding",
+            ),
             "PAT-SAMPLE-023": ("138/88", 105, 20, "94.0", "37.8", "Palpitations and severe pain"),
             # Barugo / Capoocan
             "PAT-SAMPLE-006": ("130/85", 82, 17, "97.0", "37.0", "Follow-up for hypertension"),
@@ -249,8 +509,22 @@ class Command(BaseCommand):
             "PAT-SAMPLE-008": ("118/78", 70, 15, "99.5", "36.7", "Ankle sprain, swelling"),
             "PAT-SAMPLE-009": ("115/75", 68, 16, "98.5", "36.9", "Prenatal vitals normal"),
             "PAT-SAMPLE-010": ("122/80", 74, 16, "97.5", "37.2", "Sore throat, low fever"),
-            "PAT-SAMPLE-024": ("128/82", 78, 16, "97.0", "36.9", "Diabetic follow-up, mild fatigue"),
-            "PAT-SAMPLE-025": ("100/65", 118, 20, "92.0", "36.5", "Found unconscious, unresponsive"),
+            "PAT-SAMPLE-024": (
+                "128/82",
+                78,
+                16,
+                "97.0",
+                "36.9",
+                "Diabetic follow-up, mild fatigue",
+            ),
+            "PAT-SAMPLE-025": (
+                "100/65",
+                118,
+                20,
+                "92.0",
+                "36.5",
+                "Found unconscious, unresponsive",
+            ),
             # PAT-SAMPLE-021, PAT-SAMPLE-022 intentionally omitted — awaiting nurse triage
         }
 
@@ -319,12 +593,47 @@ class Command(BaseCommand):
     def _seed_consultations(self, patients: list[Patient], doctors: list[User]) -> int:
         now = timezone.now()
         consult_specs = [
-            (0, "Acute bronchitis", "Rest, fluids, bronchodilator", "Salbutamol inhaler", True, False),
-            (1, "Suspected angina", "ECG, aspirin, admit for observation", "Aspirin 81mg", True, False),
+            (
+                0,
+                "Acute bronchitis",
+                "Rest, fluids, bronchodilator",
+                "Salbutamol inhaler",
+                True,
+                False,
+            ),
+            (
+                1,
+                "Suspected angina",
+                "ECG, aspirin, admit for observation",
+                "Aspirin 81mg",
+                True,
+                False,
+            ),
             (2, "Viral fever", "Antipyretics, hydration", "Paracetamol 500mg", False, False),
-            (3, "Acute asthma exacerbation", "Nebulizer, oxygen therapy", "Prednisone 40mg", True, False),
-            (4, "Tension headache", "Analgesics, stress management", "Ibuprofen 400mg", False, True),
-            (5, "Hypertension Stage 2", "Lifestyle modification, medication", "Losartan 50mg daily", True, False),
+            (
+                3,
+                "Acute asthma exacerbation",
+                "Nebulizer, oxygen therapy",
+                "Prednisone 40mg",
+                True,
+                False,
+            ),
+            (
+                4,
+                "Tension headache",
+                "Analgesics, stress management",
+                "Ibuprofen 400mg",
+                False,
+                True,
+            ),
+            (
+                5,
+                "Hypertension Stage 2",
+                "Lifestyle modification, medication",
+                "Losartan 50mg daily",
+                True,
+                False,
+            ),
         ]
         count = 0
         carigara_doctor = doctors[0]
@@ -332,7 +641,9 @@ class Command(BaseCommand):
             if p_idx >= len(patients):
                 break
             patient = patients[p_idx]
-            doctor = carigara_doctor if patient.clinic_id == carigara_doctor.clinic_id else doctors[1]
+            doctor = (
+                carigara_doctor if patient.clinic_id == carigara_doctor.clinic_id else doctors[1]
+            )
             consultation, created = Consultation.objects.get_or_create(
                 patient=patient,
                 doctor=doctor,
@@ -360,10 +671,14 @@ class Command(BaseCommand):
 
     def _print_credentials(self, users: dict) -> None:
         self.stdout.write("\n  Demo accounts:")
-        for email in User.objects.filter(email__endswith="@mhtms.gov.ph").values_list("email", flat=True):
+        for email in User.objects.filter(email__endswith="@mhtms.gov.ph").values_list(
+            "email", flat=True
+        ):
             self.stdout.write(f"    • {email}")
         self.stdout.write("\n  Re-seed anytime: python manage.py seed_demo --reset")
         self.stdout.write(
             "  Nurse login (Carigara): nurse@mhtms.gov.ph — queue shows Critical/Moderate/Stable mix"
         )
-        self.stdout.write("  Awaiting triage: PAT-SAMPLE-021, PAT-SAMPLE-022 (register vitals in dashboard)\n")
+        self.stdout.write(
+            "  Awaiting triage: PAT-SAMPLE-021, PAT-SAMPLE-022 (register vitals in dashboard)\n"
+        )

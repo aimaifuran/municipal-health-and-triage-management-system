@@ -1,4 +1,5 @@
 """Anti-IDOR queryset filtering and access validation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,8 +12,9 @@ from auditlogs.services import AuditService
 from common.exceptions import AntiIDORViolation
 
 if TYPE_CHECKING:
-    from accounts.models import User
     from django.http import HttpRequest
+
+    from accounts.models import User
     from patients.models import Patient
 
 
@@ -39,7 +41,9 @@ class AccessControlService:
         return queryset.none()
 
     @staticmethod
-    def can_access_patient(user: User, patient: Patient, request: HttpRequest | None = None) -> bool:
+    def can_access_patient(
+        user: User, patient: Patient, request: HttpRequest | None = None
+    ) -> bool:
         if not getattr(user, "is_authenticated", False):
             return False
         if user.role == UserRole.SUPER_ADMIN or user.is_superuser:

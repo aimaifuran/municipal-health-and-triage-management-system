@@ -1,4 +1,5 @@
 """Forms for doctor consultation entry from the active queue."""
+
 from __future__ import annotations
 
 from django import forms

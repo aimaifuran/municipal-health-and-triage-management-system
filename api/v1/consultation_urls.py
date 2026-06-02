@@ -1,7 +1,12 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from api.v1.views import AdmitPatientView, BulkDischargeView, ConsultationViewSet, DischargePatientView
+from api.v1.views import (
+    AdmitPatientView,
+    BulkDischargeView,
+    ConsultationViewSet,
+    DischargePatientView,
+)
 
 router = DefaultRouter()
 router.register("", ConsultationViewSet, basename="consultation")

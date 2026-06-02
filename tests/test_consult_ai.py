@@ -12,6 +12,7 @@ from consultations.ai_consultation import (
 )
 from triage.models import SeverityLevel, TriageRecord
 
+
 @pytest.mark.django_db
 class TestConsultAI:
     def test_build_clinical_context_includes_triage(self, assigned_patient, nurse):
@@ -45,7 +46,9 @@ class TestConsultAI:
 
     @patch("consultations.ai_consultation.httpx.Client")
     @patch("consultations.ai_consultation.config")
-    def test_generate_parses_openai_response(self, mock_config, mock_client_cls, assigned_patient, nurse):
+    def test_generate_parses_openai_response(
+        self, mock_config, mock_client_cls, assigned_patient, nurse
+    ):
         def _config(key, default="", cast=None):
             values = {
                 "OPENAI_API_KEY": "sk-test",

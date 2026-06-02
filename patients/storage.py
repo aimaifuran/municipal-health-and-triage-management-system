@@ -1,4 +1,5 @@
 """Cloudinary upload helpers with validation."""
+
 from __future__ import annotations
 
 import cloudinary.uploader

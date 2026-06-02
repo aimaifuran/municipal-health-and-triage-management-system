@@ -1,4 +1,5 @@
 """Error pages and core views."""
+
 from django.shortcuts import render
 
 

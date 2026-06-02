@@ -1,4 +1,5 @@
 """Production CSP must allow frontend CDNs used in templates."""
+
 from django.test import SimpleTestCase
 
 from config.settings import production as production_settings

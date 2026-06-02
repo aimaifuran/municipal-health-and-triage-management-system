@@ -1,4 +1,5 @@
 """API v1 URL routing."""
+
 from django.urls import include, path
 
 urlpatterns = [

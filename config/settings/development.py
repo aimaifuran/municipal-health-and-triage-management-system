@@ -1,4 +1,5 @@
 """Development settings."""
+
 from .base import *  # noqa: F403
 
 DEBUG = config("DEBUG", default=True, cast=bool)  # noqa: F405

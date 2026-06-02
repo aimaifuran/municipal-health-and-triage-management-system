@@ -1,4 +1,5 @@
 """Patient demographic and document models."""
+
 from __future__ import annotations
 
 from django.conf import settings

@@ -1,4 +1,5 @@
 """Discharged patient summary context and PDF generation."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -46,7 +47,9 @@ def _discharged_consultation_queryset() -> QuerySet:
 
 def get_discharged_consultation(user: User, pk, request: HttpRequest | None = None) -> Consultation:
     consultation = get_object_or_404(
-        AccessControlService.filter_consultations_for_user(user, _discharged_consultation_queryset()),
+        AccessControlService.filter_consultations_for_user(
+            user, _discharged_consultation_queryset()
+        ),
         pk=pk,
     )
     AccessControlService.assert_patient_access(user, consultation.patient, request)
@@ -87,7 +90,13 @@ def _pdf_cell(text: str) -> str:
 
 
 def _label_value_table(rows: list[tuple[str, str]], col_widths=None) -> Table:
-    data = [[Paragraph(f"<b>{_pdf_cell(label)}</b>", _STYLES["label"]), Paragraph(_pdf_cell(value), _STYLES["body"])] for label, value in rows]
+    data = [
+        [
+            Paragraph(f"<b>{_pdf_cell(label)}</b>", _STYLES["label"]),
+            Paragraph(_pdf_cell(value), _STYLES["body"]),
+        ]
+        for label, value in rows
+    ]
     table = Table(data, colWidths=col_widths or [1.55 * inch, 5.2 * inch])
     table.setStyle(
         TableStyle(
@@ -233,7 +242,10 @@ def render_discharge_summary_pdf(ctx: DischargeSummaryContext) -> bytes:
         story.append(
             _label_value_table(
                 [
-                    ("Date / time of triage", timezone.localtime(triage.created_at).strftime("%B %d, %Y %I:%M %p")),
+                    (
+                        "Date / time of triage",
+                        timezone.localtime(triage.created_at).strftime("%B %d, %Y %I:%M %p"),
+                    ),
                     ("Severity", triage.get_severity_level_display()),
                     ("Blood pressure", triage.blood_pressure),
                     ("Heart rate", f"{triage.heart_rate} bpm"),
@@ -289,8 +301,17 @@ def render_discharge_summary_pdf(ctx: DischargeSummaryContext) -> bytes:
     sig_data = [
         ["", ""],
         [Paragraph(f"<b>{_pdf_cell(doctor_name)}</b>", _STYLES["sig"]), ""],
-        [Paragraph("Attending Physician", _STYLES["sig"]), Paragraph("Date signed", _STYLES["sig"])],
-        [Paragraph(discharged_str.split(" ")[0] if discharged_str != "—" else "_______________", _STYLES["sig"]), ""],
+        [
+            Paragraph("Attending Physician", _STYLES["sig"]),
+            Paragraph("Date signed", _STYLES["sig"]),
+        ],
+        [
+            Paragraph(
+                discharged_str.split(" ")[0] if discharged_str != "—" else "_______________",
+                _STYLES["sig"],
+            ),
+            "",
+        ],
     ]
     sig_table = Table(sig_data, colWidths=[3.4 * inch, 3.4 * inch])
     sig_table.setStyle(TableStyle([("LINEABOVE", (0, 1), (0, 1), 0.75, colors.black)]))
@@ -314,5 +335,7 @@ def render_discharge_summary_pdf(ctx: DischargeSummaryContext) -> bytes:
 
 def discharge_summary_filename(ctx: DischargeSummaryContext) -> str:
     patient_number = ctx.patient.patient_number.replace("/", "-")
-    date_part = timezone.localtime(ctx.consultation.discharged_at or ctx.generated_at).strftime("%Y%m%d")
+    date_part = timezone.localtime(ctx.consultation.discharged_at or ctx.generated_at).strftime(
+        "%Y%m%d"
+    )
     return f"Discharge-Summary-{patient_number}-{date_part}.pdf"

@@ -1,4 +1,5 @@
 """Backfill doctor assignments for patients already in the active triage queue."""
+
 from django.db import migrations
 
 
@@ -9,9 +10,7 @@ def backfill_assignments(apps, schema_editor):
     DoctorPatientAssignment = apps.get_model("accounts", "DoctorPatientAssignment")
 
     patient_ids = (
-        TriageRecord.objects.filter(is_active=True)
-        .values_list("patient_id", flat=True)
-        .distinct()
+        TriageRecord.objects.filter(is_active=True).values_list("patient_id", flat=True).distinct()
     )
     for patient in Patient.objects.filter(id__in=patient_ids).only("id", "clinic_id"):
         if not patient.clinic_id:

@@ -6,38 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('triage', '0001_initial'),
+        ("triage", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='triagerecord',
-            name='critical_findings',
+            model_name="triagerecord",
+            name="critical_findings",
             field=models.JSONField(blank=True, default=list),
         ),
         migrations.AddField(
-            model_name='triagerecord',
-            name='possible_conditions',
+            model_name="triagerecord",
+            name="possible_conditions",
             field=models.JSONField(blank=True, default=list),
         ),
         migrations.AddField(
-            model_name='triagerecord',
-            name='recommended_action',
+            model_name="triagerecord",
+            name="recommended_action",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='triagerecord',
-            name='requires_immediate_attention',
+            model_name="triagerecord",
+            name="requires_immediate_attention",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='triagerecord',
-            name='triage_reasoning',
+            model_name="triagerecord",
+            name="triage_reasoning",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='triagerecord',
-            name='triage_tier',
-            field=models.CharField(choices=[('RED', 'RED — Critical (immediate)'), ('ORANGE', 'ORANGE — High priority (urgent)'), ('YELLOW', 'YELLOW — Moderate (assess soon)'), ('GREEN', 'GREEN — Low (non-urgent)')], db_index=True, default='GREEN', max_length=8),
+            model_name="triagerecord",
+            name="triage_tier",
+            field=models.CharField(
+                choices=[
+                    ("RED", "RED — Critical (immediate)"),
+                    ("ORANGE", "ORANGE — High priority (urgent)"),
+                    ("YELLOW", "YELLOW — Moderate (assess soon)"),
+                    ("GREEN", "GREEN — Low (non-urgent)"),
+                ],
+                db_index=True,
+                default="GREEN",
+                max_length=8,
+            ),
         ),
     ]

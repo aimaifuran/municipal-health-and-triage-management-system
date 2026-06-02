@@ -1,4 +1,5 @@
 """OpenAI-assisted consultation draft generation for doctor queue."""
+
 from __future__ import annotations
 
 import json
@@ -254,14 +255,18 @@ def generate_consultation_suggestion(
         ) from exc
     except httpx.HTTPError as exc:
         logger.warning("OpenAI HTTP error: %s", exc)
-        raise ConsultationAIRequestError("Could not reach OpenAI. Check your network and try again.") from exc
+        raise ConsultationAIRequestError(
+            "Could not reach OpenAI. Check your network and try again."
+        ) from exc
 
     if response.status_code == 401:
         raise ConsultationAIConfigurationError("Invalid OpenAI API key.")
     if response.status_code == 429:
         raise ConsultationAIRequestError("OpenAI rate limit reached. Wait a moment and try again.")
     if response.status_code >= 400:
-        logger.warning("OpenAI API error status=%s body=%s", response.status_code, response.text[:500])
+        logger.warning(
+            "OpenAI API error status=%s body=%s", response.status_code, response.text[:500]
+        )
         raise ConsultationAIRequestError("OpenAI could not generate a consultation draft.")
 
     try:

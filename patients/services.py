@@ -1,4 +1,5 @@
 """Patient registration and archive services."""
+
 from __future__ import annotations
 
 import secrets
@@ -12,8 +13,9 @@ from auditlogs.services import AuditService
 from patients.models import Patient
 
 if TYPE_CHECKING:
-    from accounts.models import User
     from django.http import HttpRequest
+
+    from accounts.models import User
 
 
 class PatientService:
@@ -40,7 +42,9 @@ class PatientService:
             clinic=clinic,
         ).exists()
         if duplicate:
-            raise ValueError("A patient with the same name and birth date already exists at this clinic.")
+            raise ValueError(
+                "A patient with the same name and birth date already exists at this clinic."
+            )
         patient = Patient.objects.create(
             patient_number=PatientService.generate_patient_number(str(clinic.id)),
             clinic=clinic,

@@ -1,4 +1,5 @@
 """Security headers and audit middleware."""
+
 from __future__ import annotations
 
 from typing import Callable
@@ -20,7 +21,9 @@ class SecurityHeadersMiddleware:
         if csp:
             response["Content-Security-Policy"] = csp
         response["X-Content-Type-Options"] = "nosniff"
-        response["Referrer-Policy"] = getattr(settings, "SECURE_REFERRER_POLICY", "strict-origin-when-cross-origin")
+        response["Referrer-Policy"] = getattr(
+            settings, "SECURE_REFERRER_POLICY", "strict-origin-when-cross-origin"
+        )
         return response
 
 

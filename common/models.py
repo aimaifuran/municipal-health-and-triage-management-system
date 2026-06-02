@@ -1,4 +1,5 @@
 """Abstract base models shared across the application."""
+
 from __future__ import annotations
 
 import uuid

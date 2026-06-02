@@ -1,4 +1,5 @@
 """Cloudinary helpers for staff profile pictures."""
+
 from __future__ import annotations
 
 import cloudinary.uploader

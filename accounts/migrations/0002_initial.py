@@ -9,26 +9,32 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('accounts', '0001_initial'),
-        ('patients', '0001_initial'),
+        ("accounts", "0001_initial"),
+        ("patients", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='doctorpatientassignment',
-            name='patient',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='doctor_assignments', to='patients.patient'),
+            model_name="doctorpatientassignment",
+            name="patient",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="doctor_assignments",
+                to="patients.patient",
+            ),
         ),
         migrations.AddIndex(
-            model_name='user',
-            index=models.Index(fields=['role', 'clinic'], name='accounts_us_role_6c7ab7_idx'),
+            model_name="user",
+            index=models.Index(fields=["role", "clinic"], name="accounts_us_role_6c7ab7_idx"),
         ),
         migrations.AddIndex(
-            model_name='doctorpatientassignment',
-            index=models.Index(fields=['doctor', 'is_active'], name='accounts_do_doctor__cb0550_idx'),
+            model_name="doctorpatientassignment",
+            index=models.Index(
+                fields=["doctor", "is_active"], name="accounts_do_doctor__cb0550_idx"
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='doctorpatientassignment',
-            unique_together={('doctor', 'patient')},
+            name="doctorpatientassignment",
+            unique_together={("doctor", "patient")},
         ),
     ]

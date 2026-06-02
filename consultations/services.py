@@ -1,4 +1,5 @@
 """Consultation, admit, discharge, and bulk discharge services."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -13,8 +14,9 @@ from security.access import AccessControlService
 from triage.models import TriageRecord, TriageStatus
 
 if TYPE_CHECKING:
-    from accounts.models import User
     from django.http import HttpRequest
+
+    from accounts.models import User
     from patients.models import Patient
 
 
@@ -182,10 +184,12 @@ class ConsultationService:
         for cid in normalized_ids:
             if cid in found_ids or cid in results["success"]:
                 continue
-            results["failed"].append({
-                "id": cid,
-                "reason": ConsultationService._bulk_discharge_failure_reason(cid, user),
-            })
+            results["failed"].append(
+                {
+                    "id": cid,
+                    "reason": ConsultationService._bulk_discharge_failure_reason(cid, user),
+                }
+            )
 
         if results["success"] or results["failed"]:
             AuditService.log(
@@ -253,10 +257,12 @@ class ConsultationService:
         for cid in normalized_ids:
             if cid in found_ids or cid in results["success"]:
                 continue
-            results["failed"].append({
-                "id": cid,
-                "reason": ConsultationService._bulk_readmit_failure_reason(cid, user),
-            })
+            results["failed"].append(
+                {
+                    "id": cid,
+                    "reason": ConsultationService._bulk_readmit_failure_reason(cid, user),
+                }
+            )
 
         if results["success"] or results["failed"]:
             AuditService.log(

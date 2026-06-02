@@ -5,6 +5,7 @@ Maps emergency-medicine triage tiers (RED/ORANGE/YELLOW/GREEN) to
 SeverityLevel values (critical / moderate / stable). Used only for triage scoring.
 See docs/TRIAGE_SEVERITY_EVALUATION.md for full documentation.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -133,6 +134,7 @@ class TriageAssessment:
             "recommended_action": self.recommended_action,
             "triage_reasoning": self.triage_reasoning,
         }
+
 
 def patient_age_years(birth_date: date | None, *, on_date: date | None = None) -> int | None:
     if not birth_date:
@@ -367,9 +369,7 @@ class ClinicalTriageEngine:
                 "Special population factors: " + ", ".join(population_note) + "."
             )
         if tier in (TriageTier.RED, TriageTier.ORANGE):
-            reasoning_parts.append(
-                "When uncertain, higher acuity was selected for patient safety."
-            )
+            reasoning_parts.append("When uncertain, higher acuity was selected for patient safety.")
 
         return TriageAssessment(
             severity_level=severity,

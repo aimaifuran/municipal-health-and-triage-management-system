@@ -1,4 +1,5 @@
 """Global template context."""
+
 from django.conf import settings
 
 

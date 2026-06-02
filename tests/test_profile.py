@@ -2,10 +2,10 @@ from io import BytesIO
 from unittest.mock import patch
 
 import pytest
-from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import reverse
+from PIL import Image
 
 from accounts.models import User
 

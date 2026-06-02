@@ -6,32 +6,32 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('triage', '0002_triage_clinical_assessment'),
+        ("triage", "0002_triage_clinical_assessment"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='triagerecord',
-            name='critical_findings',
+            model_name="triagerecord",
+            name="critical_findings",
         ),
         migrations.RemoveField(
-            model_name='triagerecord',
-            name='possible_conditions',
+            model_name="triagerecord",
+            name="possible_conditions",
         ),
         migrations.RemoveField(
-            model_name='triagerecord',
-            name='recommended_action',
+            model_name="triagerecord",
+            name="recommended_action",
         ),
         migrations.RemoveField(
-            model_name='triagerecord',
-            name='requires_immediate_attention',
+            model_name="triagerecord",
+            name="requires_immediate_attention",
         ),
         migrations.RemoveField(
-            model_name='triagerecord',
-            name='triage_reasoning',
+            model_name="triagerecord",
+            name="triage_reasoning",
         ),
         migrations.RemoveField(
-            model_name='triagerecord',
-            name='triage_tier',
+            model_name="triagerecord",
+            name="triage_tier",
         ),
     ]

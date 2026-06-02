@@ -1,4 +1,5 @@
 """Doctor bulk discharge UI wiring."""
+
 import pytest
 from django.urls import reverse
 

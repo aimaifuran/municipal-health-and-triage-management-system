@@ -1,4 +1,5 @@
 """OpenAPI schema helpers for drf-spectacular."""
+
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
 
 

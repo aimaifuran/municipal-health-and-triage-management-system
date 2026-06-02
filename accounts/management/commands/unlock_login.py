@@ -1,4 +1,5 @@
 """Reset django-axes lockouts and user failed-login counters."""
+
 from django.core.management.base import BaseCommand
 
 from accounts.models import User
@@ -35,7 +36,9 @@ class Command(BaseCommand):
         if email:
             reset(username=email)
             updated = User.objects.filter(email__iexact=email).update(failed_login_attempts=0)
-            self.stdout.write(self.style.SUCCESS(f"Unlocked {email} (axes + {updated} user record(s))."))
+            self.stdout.write(
+                self.style.SUCCESS(f"Unlocked {email} (axes + {updated} user record(s)).")
+            )
             return
 
         if ip:
@@ -48,7 +51,9 @@ class Command(BaseCommand):
             AccessAttempt.objects.all().delete()
             User.objects.update(failed_login_attempts=0)
             self.stdout.write(
-                self.style.SUCCESS(f"Cleared {count} axes attempt(s) and reset all user failed_login counters.")
+                self.style.SUCCESS(
+                    f"Cleared {count} axes attempt(s) and reset all user failed_login counters."
+                )
             )
             return
 

@@ -1,4 +1,5 @@
 """Triage business logic and priority scoring."""
+
 from __future__ import annotations
 
 from decimal import Decimal
@@ -14,8 +15,9 @@ from triage.severity_engine import ClinicalTriageEngine, TriageAssessment
 from triage.severity_engine import patient_age_years as compute_patient_age_years
 
 if TYPE_CHECKING:
-    from accounts.models import User
     from django.http import HttpRequest
+
+    from accounts.models import User
     from patients.models import Patient
 
 
@@ -132,7 +134,9 @@ class TriageService:
 
     @staticmethod
     @transaction.atomic
-    def update_vitals(record: TriageRecord, validated_data: dict, user: User, request=None) -> TriageRecord:
+    def update_vitals(
+        record: TriageRecord, validated_data: dict, user: User, request=None
+    ) -> TriageRecord:
         for key, value in validated_data.items():
             setattr(record, key, value)
         assessment = PriorityCalculator.assess(

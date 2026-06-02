@@ -1,4 +1,5 @@
 """Configure Cloudinary SDK from Django settings (required for direct uploader calls)."""
+
 from __future__ import annotations
 
 import logging

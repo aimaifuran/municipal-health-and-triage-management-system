@@ -1,4 +1,5 @@
 """Shared pagination helpers for dashboard views."""
+
 from __future__ import annotations
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator

@@ -1,4 +1,5 @@
 """Doctor–patient assignment for clinic-scoped access control."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

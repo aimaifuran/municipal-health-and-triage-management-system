@@ -1,4 +1,5 @@
 """Server-side list filters stored in session (never in URL query strings)."""
+
 from __future__ import annotations
 
 from django.db.models import OuterRef, Q, QuerySet, Subquery
@@ -63,8 +64,8 @@ def sync_scope_filters_from_post(
     page_params: tuple[str, ...] = (),
 ) -> dict:
     """
-    On POST, persist search/filter/page values to the session and return the scope dict.
-  Read-only requests use stored session values only.
+      On POST, persist search/filter/page values to the session and return the scope dict.
+    Read-only requests use stored session values only.
     """
     store = _session_store(request)
     storage_key = _scope_storage_key(request, scope)

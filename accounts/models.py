@@ -1,4 +1,5 @@
 """Custom user and clinic models."""
+
 from __future__ import annotations
 
 import uuid

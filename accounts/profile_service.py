@@ -1,4 +1,5 @@
 """Profile updates for authenticated staff."""
+
 from __future__ import annotations
 
 from typing import Any

@@ -1,4 +1,5 @@
 """Login page validation and inline error display."""
+
 import pytest
 from django.urls import reverse
 

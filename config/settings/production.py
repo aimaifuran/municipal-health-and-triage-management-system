@@ -1,4 +1,5 @@
 """Production settings — DEBUG is always False."""
+
 from __future__ import annotations
 
 import dj_database_url
@@ -9,7 +10,9 @@ DEBUG = False
 
 database_url = config("DATABASE_URL", default="")  # noqa: F405
 if database_url:
-    DATABASES["default"] = dj_database_url.parse(database_url, conn_max_age=600, ssl_require=True)  # noqa: F405
+    DATABASES["default"] = dj_database_url.parse(
+        database_url, conn_max_age=600, ssl_require=True
+    )  # noqa: F405
 
 SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)  # noqa: F405
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

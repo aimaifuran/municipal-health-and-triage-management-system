@@ -1,7 +1,7 @@
 import pytest
 
-from security.access import AccessControlService
 from accounts.models import DoctorPatientAssignment
+from security.access import AccessControlService
 
 
 @pytest.mark.django_db

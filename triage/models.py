@@ -1,4 +1,5 @@
 """Triage records and priority scoring."""
+
 from __future__ import annotations
 
 from django.conf import settings

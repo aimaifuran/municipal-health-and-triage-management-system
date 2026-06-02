@@ -1,9 +1,10 @@
-import pytest
 from decimal import Decimal
 
+import pytest
+
 from triage.models import SeverityLevel
-from triage.severity_engine import TriageTier
 from triage.services import PriorityCalculator
+from triage.severity_engine import TriageTier
 
 
 @pytest.mark.django_db
@@ -22,7 +23,10 @@ class TestPriorityCalculator:
         assert assessment.severity_level == SeverityLevel.CRITICAL
         assert assessment.priority_score >= 80
         assert assessment.requires_immediate_attention is True
-        assert "Chest pain" in " ".join(assessment.critical_findings).lower() or assessment.critical_findings
+        assert (
+            "Chest pain" in " ".join(assessment.critical_findings).lower()
+            or assessment.critical_findings
+        )
 
     def test_calculate_backward_compatible(self):
         score, severity = PriorityCalculator.calculate(

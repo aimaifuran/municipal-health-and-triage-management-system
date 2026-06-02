@@ -1,4 +1,5 @@
 """Aggregate metrics and chart payloads for the super-admin dashboard."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -42,22 +43,24 @@ def build_admin_dashboard_analytics() -> dict:
         severity_map[row["severity_level"]] = row["count"]
 
     staff_map = {role: 0 for role in STAFF_ROLES}
-    for row in User.objects.filter(role__in=STAFF_ROLES, is_active=True).values("role").annotate(
-        count=Count("id")
+    for row in (
+        User.objects.filter(role__in=STAFF_ROLES, is_active=True)
+        .values("role")
+        .annotate(count=Count("id"))
     ):
         staff_map[row["role"]] = row["count"]
 
     clinic_rows = (
-        queue_qs.values("patient__clinic__name")
-        .annotate(count=Count("id"))
-        .order_by("-count")[:8]
+        queue_qs.values("patient__clinic__name").annotate(count=Count("id")).order_by("-count")[:8]
     )
     clinic_labels = [row["patient__clinic__name"] or "Unassigned" for row in clinic_rows]
     clinic_counts = [row["count"] for row in clinic_rows]
 
     patients_series = _series_for_days(Patient.objects.all(), "created_at", 7)
 
-    login_qs = LoginAttempt.objects.filter(timestamp__date__gte=timezone.localdate() - timedelta(days=6))
+    login_qs = LoginAttempt.objects.filter(
+        timestamp__date__gte=timezone.localdate() - timedelta(days=6)
+    )
     login_success = _series_for_days(login_qs.filter(success=True), "timestamp", 7)
     login_failed = _series_for_days(login_qs.filter(success=False), "timestamp", 7)
 

@@ -1,4 +1,5 @@
 """Forms for nurse triage vitals entry."""
+
 from __future__ import annotations
 
 from decimal import Decimal
@@ -46,7 +47,9 @@ class TriageVitalsForm(forms.Form):
         decimal_places=1,
         min_value=Decimal("32"),
         max_value=Decimal("45"),
-        widget=forms.NumberInput(attrs={"placeholder": "36.6", "step": "0.1", "class": "form-input"}),
+        widget=forms.NumberInput(
+            attrs={"placeholder": "36.6", "step": "0.1", "class": "form-input"}
+        ),
     )
     symptoms = forms.CharField(
         label="Symptoms",

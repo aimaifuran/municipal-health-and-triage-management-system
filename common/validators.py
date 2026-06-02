@@ -1,4 +1,5 @@
 """Shared validators for medical and contact data."""
+
 from __future__ import annotations
 
 import re

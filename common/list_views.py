@@ -1,4 +1,5 @@
 """Shared POST handlers for dashboard list filtering."""
+
 from __future__ import annotations
 
 from django.http import HttpRequest, HttpResponse

@@ -1,4 +1,5 @@
 """Account forms with honeypot protection."""
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
@@ -22,13 +23,17 @@ class ClinicForm(forms.ModelForm):
             "address": forms.Textarea(attrs={**INPUT, "rows": 2}),
             "municipality": forms.TextInput(attrs=INPUT),
             "region": forms.TextInput(attrs=INPUT),
-            "is_active": forms.CheckboxInput(attrs={"class": "rounded border-slate-300 text-teal-600"}),
+            "is_active": forms.CheckboxInput(
+                attrs={"class": "rounded border-slate-300 text-teal-600"}
+            ),
         }
 
 
 class StaffUserForm(forms.Form):
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={**INPUT, "autocomplete": "email", "placeholder": "nurse@mhtms.gov.ph"}),
+        widget=forms.EmailInput(
+            attrs={**INPUT, "autocomplete": "email", "placeholder": "nurse@mhtms.gov.ph"}
+        ),
     )
     first_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs=INPUT))
     last_name = forms.CharField(max_length=150, widget=forms.TextInput(attrs=INPUT))

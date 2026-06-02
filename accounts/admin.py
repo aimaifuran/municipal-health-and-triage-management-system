@@ -21,10 +21,16 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ("email", "password")}),
         ("Profile", {"fields": ("first_name", "last_name", "role", "clinic", "is_verified")}),
         ("Security", {"fields": ("last_login_ip", "failed_login_attempts")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        (
+            "Permissions",
+            {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
+        ),
     )
     add_fieldsets = (
-        (None, {"classes": ("wide",), "fields": ("email", "password1", "password2", "role", "clinic")}),
+        (
+            None,
+            {"classes": ("wide",), "fields": ("email", "password1", "password2", "role", "clinic")},
+        ),
     )
 
 

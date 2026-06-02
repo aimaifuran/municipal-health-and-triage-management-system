@@ -1,4 +1,5 @@
 """Honeypot field validation for bot protection."""
+
 from __future__ import annotations
 
 from django import forms

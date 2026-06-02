@@ -1,4 +1,5 @@
 """DRF permission classes for RBAC and anti-IDOR."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -51,8 +52,7 @@ class IsClinicalStaff(permissions.BasePermission):
         return bool(
             request.user
             and request.user.is_authenticated
-            and request.user.role
-            in (UserRole.DOCTOR, UserRole.NURSE, UserRole.SUPER_ADMIN)
+            and request.user.role in (UserRole.DOCTOR, UserRole.NURSE, UserRole.SUPER_ADMIN)
         )
 
 

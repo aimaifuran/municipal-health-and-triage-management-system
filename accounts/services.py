@@ -1,4 +1,5 @@
 """Account and clinic administration for super admins."""
+
 from __future__ import annotations
 
 from typing import Any
