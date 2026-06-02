@@ -9,14 +9,6 @@ from django.utils import timezone
 
 
 @pytest.fixture(autouse=True)
-def simple_staticfiles(settings):
-    settings.STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
-    }
-
-
-@pytest.fixture(autouse=True)
 def lockout_policy(settings):
     settings.AXES_FAILURE_LIMIT = 5
     settings.AXES_COOLOFF_MINUTES = 10

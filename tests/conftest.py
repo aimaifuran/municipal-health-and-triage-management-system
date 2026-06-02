@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 os.environ.setdefault("USE_SQLITE_DEV", "1")
 
@@ -7,6 +8,17 @@ from rest_framework.test import APIClient  # noqa: E402
 
 from accounts.models import Clinic, DoctorPatientAssignment, User, UserRole  # noqa: E402
 from patients.models import Patient  # noqa: E402
+
+# Manifest static storage needs collectstatic; use simple storage for all tests.
+TEST_STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+
+
+@pytest.fixture(autouse=True)
+def simple_staticfiles(settings):
+    settings.STORAGES = TEST_STORAGES
 
 
 @pytest.fixture
@@ -59,7 +71,7 @@ def patient(db, clinic, receptionist):
         patient_number="PAT-TEST-001",
         first_name="Juan",
         last_name="Dela Cruz",
-        birth_date="1990-01-15",
+        birth_date=date(1990, 1, 15),
         gender="male",
         address="Cebu",
         contact_number="+639171234567",

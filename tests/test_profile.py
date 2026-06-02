@@ -3,20 +3,8 @@ from unittest.mock import patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 from django.urls import reverse
 from PIL import Image
-
-TEST_STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
-}
-
-
-@pytest.fixture(autouse=True)
-def simple_static_storage():
-    with override_settings(STORAGES=TEST_STORAGES):
-        yield
 
 
 @pytest.mark.django_db

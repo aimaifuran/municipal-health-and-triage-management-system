@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from rest_framework import status
 
@@ -13,7 +15,7 @@ class TestAntiIDOR:
             patient_number="PAT-OTHER-001",
             first_name="Ana",
             last_name="Reyes",
-            birth_date="1985-05-20",
+            birth_date=date(1985, 5, 20),
             gender="female",
             address="Cebu",
             contact_number="+639171234568",

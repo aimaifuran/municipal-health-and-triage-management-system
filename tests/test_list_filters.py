@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from common.list_filters import patient_search_q
@@ -19,7 +21,7 @@ class TestPatientSearch:
             patient_number="PAT-SEARCH-001",
             first_name="Jenny",
             last_name="Aquino",
-            birth_date="1990-01-01",
+            birth_date=date(1990, 1, 1),
             gender="female",
             address="Cebu",
             contact_number="+639171234567",

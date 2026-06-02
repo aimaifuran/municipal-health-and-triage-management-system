@@ -4,14 +4,6 @@ import pytest
 from django.urls import reverse
 
 
-@pytest.fixture(autouse=True)
-def simple_staticfiles(settings):
-    settings.STORAGES = {
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
-    }
-
-
 @pytest.mark.django_db
 class TestLoginPage:
     url = reverse("accounts:login")
