@@ -13,7 +13,9 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
 from accounts.forms import LoginForm, ProfileDetailsForm, ProfilePasswordForm, ProfilePictureForm
+from accounts.login_lockout import is_login_locked, record_failed_login
 from accounts.profile_service import ProfileService
+from axes.helpers import get_lockout_message
 from auditlogs.models import AuditAction
 from auditlogs.services import AuditService
 
@@ -33,6 +35,14 @@ class UserLoginView(LoginView):
         return response
 
     def form_valid(self, form):
+        username = form.cleaned_data.get("username", "")
+        password = form.cleaned_data.get("password", "")
+        if is_login_locked(self.request, username, password):
+            self.request.axes_locked_out = False
+            form.add_error(None, get_lockout_message())
+            AuditService.log_login_attempt(username, False, self.request)
+            return self.form_invalid(form)
+
         user = form.get_user()
         ip = self.request.META.get("REMOTE_ADDR")
         user.last_login_ip = ip
@@ -45,6 +55,7 @@ class UserLoginView(LoginView):
     def form_invalid(self, form):
         email = self.request.POST.get("username", "")
         if email:
+            record_failed_login(email)
             AuditService.log_login_attempt(email, False, self.request)
         return self.render_to_response(self.get_context_data(form=form))
 

@@ -4,9 +4,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 
+from accounts.login_lockout import is_login_locked
 from accounts.models import Clinic, UserRole
 from accounts.profile_storage import validate_profile_image
 from accounts.services import STAFF_ROLES
+from axes.helpers import get_lockout_message
 from security.honeypot import HoneypotMixin
 
 User = get_user_model()
@@ -101,6 +103,7 @@ class LoginForm(HoneypotMixin, AuthenticationForm):
     error_messages = {
         "invalid_login": "Invalid credentials",
         "inactive": "This account has been deactivated.",
+        "locked_out": "Account locked: too many login attempts. Please try again later.",
     }
 
     username = forms.EmailField(
@@ -135,6 +138,20 @@ class LoginForm(HoneypotMixin, AuthenticationForm):
         super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs.setdefault("name", "username")
         self.add_honeypot()
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        return (username or "").strip().lower()
+
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password") or ""
+        if username and password and self.request is not None:
+            if is_login_locked(self.request, username, password):
+                # View handles the message; skip middleware overlay on the same response.
+                self.request.axes_locked_out = False
+                raise forms.ValidationError(get_lockout_message())
+        return super().clean()
 
 
 class ProfileDetailsForm(forms.ModelForm):

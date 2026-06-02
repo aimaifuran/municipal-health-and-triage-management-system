@@ -125,6 +125,14 @@ GET /api/v1/public/health-stats/?region=Region+VII
 
 Returns aggregated data only; PHI fields are `"HIPAA Restricted"`.
 
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [docs/TEAM_ROLES_AND_SECURITY.md](docs/TEAM_ROLES_AND_SECURITY.md) | Team roles, architecture diagrams, security layers, defense scripts |
+| [docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md) | Render deployment |
+| [docs/CONSULT_AI_SETUP.md](docs/CONSULT_AI_SETUP.md) | Consult AI (OpenAI) setup |
+
 ## Deployment (Render)
 
 Full step-by-step guide: **[docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md)**

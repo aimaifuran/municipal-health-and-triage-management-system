@@ -54,9 +54,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "axes.middleware.AxesMiddleware",
     "security.middleware.SecurityHeadersMiddleware",
     "security.middleware.AuditMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -186,11 +186,24 @@ SPECTACULAR_SETTINGS = {
     "SECURITY": [{"BearerAuth": []}],
 }
 
-AXES_FAILURE_LIMIT = config("AXES_FAILURE_LIMIT", default=5, cast=int)
-AXES_COOLOFF_TIME = timedelta(hours=config("AXES_COOLOFF_TIME", default=1, cast=int))
-AXES_LOCKOUT_PARAMETERS = [["ip_address", "username"]]
+# Login lockout: 5 failed attempts → lock account; auto-unlock after cooloff (default 10 minutes).
+LOGIN_FAILURE_LIMIT = 5
+LOGIN_LOCKOUT_MINUTES = 10
+
+AXES_FAILURE_LIMIT = config("AXES_FAILURE_LIMIT", default=LOGIN_FAILURE_LIMIT, cast=int)
+AXES_COOLOFF_MINUTES = config("AXES_COOLOFF_MINUTES", default=LOGIN_LOCKOUT_MINUTES, cast=int)
+AXES_COOLOFF_TIME = timedelta(minutes=AXES_COOLOFF_MINUTES)
+AXES_COOLOFF_MESSAGE = (
+    f"Account locked after {AXES_FAILURE_LIMIT} failed login attempts. "
+    f"Please try again in {AXES_COOLOFF_MINUTES} minutes or contact an administrator."
+)
+# Lock the account by email so correct passwords cannot bypass lockout from another IP.
+AXES_LOCKOUT_PARAMETERS = ["username"]
 AXES_RESET_ON_SUCCESS = True
 AXES_USERNAME_FORM_FIELD = "username"
+AXES_LOCKOUT_CALLABLE = "accounts.login_lockout.axes_lockout_response"
+AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = False
+AXES_LOCK_OUT_AT_FAILURE = True
 
 AUTHENTICATION_BACKENDS = [
     "axes.backends.AxesStandaloneBackend",

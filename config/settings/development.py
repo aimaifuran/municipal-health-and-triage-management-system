@@ -19,10 +19,6 @@ CACHES = {  # noqa: F405
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
-# Shorter lockout during local development (production uses 1 hour from base settings)
-AXES_COOLOFF_TIME = 1  # noqa: F405
-AXES_FAILURE_LIMIT = 10  # noqa: F405
-
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 INSTALLED_APPS += ["django_extensions"] if False else []  # noqa: F405

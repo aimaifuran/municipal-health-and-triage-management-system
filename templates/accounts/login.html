@@ -10,10 +10,10 @@
       <p class="text-slate-500 mt-1">Secure municipal health portal</p>
     </div>
 
-    {% if form.non_field_errors %}
-    <p class="login-credentials-error" role="alert">
-      {{ form.non_field_errors.0 }}
-    </p>
+    {% if lockout_message %}
+    <p class="login-credentials-error" role="alert">{{ lockout_message }}</p>
+    {% elif form.non_field_errors %}
+    <p class="login-credentials-error" role="alert">{{ form.non_field_errors.0 }}</p>
     {% endif %}
 
     <form
