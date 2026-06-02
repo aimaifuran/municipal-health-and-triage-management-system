@@ -12,6 +12,9 @@
   <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/notify-alerts.js' %}" defer></script>
+  {% if user.is_authenticated %}
+  <script src="{% static 'js/sidebar.js' %}" defer></script>
+  {% endif %}
   {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full bg-slate-50 text-slate-900" x-data="{ sidebarOpen: false, toasts: [] }">
@@ -25,6 +28,7 @@
     </aside>
 
     <div
+      data-mobile-sidebar-overlay
       x-show="sidebarOpen"
       x-cloak
       x-transition:enter="transition ease-out duration-200"
@@ -36,9 +40,9 @@
       class="fixed inset-0 z-40 lg:hidden"
       @keydown.escape.window="sidebarOpen=false"
     >
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="sidebarOpen=false" aria-hidden="true"></div>
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-sidebar-close aria-hidden="true"></div>
       <aside
-        class="app-sidebar relative w-72 max-w-[85vw] h-full shadow-2xl"
+        class="app-sidebar absolute left-0 top-0 bottom-0 z-50 w-72 max-w-[85vw] shadow-2xl"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="-translate-x-full"
         x-transition:enter-end="translate-x-0"
@@ -46,15 +50,7 @@
         x-transition:leave-start="translate-x-0"
         x-transition:leave-end="-translate-x-full"
       >
-        <button
-          type="button"
-          class="absolute top-3 right-3 z-10 p-2 rounded-lg text-teal-100 hover:bg-white/10"
-          @click.stop="sidebarOpen=false"
-          aria-label="Close menu"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-        {% include "partials/sidebar.html" %}
+        {% include "partials/sidebar.html" with sidebar_mobile=True %}
       </aside>
     </div>
 
@@ -65,6 +61,7 @@
             <button
               type="button"
               class="lg:hidden shrink-0 p-2 -ml-1 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-teal-800 transition"
+              data-sidebar-open
               @click="sidebarOpen=true"
               aria-label="Open menu"
             >
