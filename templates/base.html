@@ -9,15 +9,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   {% block alpine_components %}{% endblock %}
-  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.csp.min.js"></script>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/notify-alerts.js' %}" defer></script>
-  {% if user.is_authenticated %}
-  <script src="{% static 'js/sidebar.js' %}" defer></script>
-  {% endif %}
   {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full bg-slate-50 text-slate-900" x-data="{ sidebarOpen: false, toasts: [] }">
+<body class="h-full bg-slate-50 text-slate-900" x-data="{ toasts: [] }">
   <div id="htmx-global-indicator" class="htmx-indicator" role="progressbar" aria-label="Loading"></div>
   <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 bg-teal-600 text-white px-3 py-2 rounded-lg shadow">Skip to content</a>
 
@@ -28,27 +25,19 @@
     </aside>
 
     <div
+      id="mobile-sidebar-overlay"
       data-mobile-sidebar-overlay
-      x-show="sidebarOpen"
-      x-cloak
-      x-transition:enter="transition ease-out duration-200"
-      x-transition:enter-start="opacity-0"
-      x-transition:enter-end="opacity-100"
-      x-transition:leave="transition ease-in duration-150"
-      x-transition:leave-start="opacity-100"
-      x-transition:leave-end="opacity-0"
-      class="fixed inset-0 z-40 lg:hidden"
-      @keydown.escape.window="sidebarOpen=false"
+      class="mobile-sidebar-overlay fixed inset-0 z-40 lg:hidden"
+      aria-hidden="true"
     >
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-sidebar-close aria-hidden="true"></div>
+      <div
+        class="mobile-sidebar-backdrop absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        data-sidebar-close
+        role="presentation"
+      ></div>
       <aside
-        class="app-sidebar absolute left-0 top-0 bottom-0 z-50 w-72 max-w-[85vw] shadow-2xl"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="-translate-x-full"
-        x-transition:enter-end="translate-x-0"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="-translate-x-full"
+        class="app-sidebar mobile-sidebar-panel absolute left-0 top-0 bottom-0 z-50 w-72 max-w-[85vw] shadow-2xl"
+        aria-label="Main navigation"
       >
         {% include "partials/sidebar.html" with sidebar_mobile=True %}
       </aside>
@@ -62,7 +51,7 @@
               type="button"
               class="lg:hidden shrink-0 p-2 -ml-1 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-teal-800 transition"
               data-sidebar-open
-              @click="sidebarOpen=true"
+              onclick="MHTMS.sidebar.open()"
               aria-label="Open menu"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -87,6 +76,41 @@
   {% if user.is_authenticated %}
     </div>
   </div>
+  <script>
+  window.MHTMS = window.MHTMS || {};
+  (function () {
+    function overlay() {
+      return document.getElementById("mobile-sidebar-overlay");
+    }
+    function setOpen(open) {
+      var el = overlay();
+      if (!el) return;
+      el.classList.toggle("is-open", open);
+      el.setAttribute("aria-hidden", open ? "false" : "true");
+      document.documentElement.classList.toggle("overflow-hidden", open);
+    }
+    MHTMS.sidebar = {
+      open: function () { setOpen(true); },
+      close: function () { setOpen(false); },
+      toggle: function () {
+        var el = overlay();
+        setOpen(el ? !el.classList.contains("is-open") : false);
+      },
+    };
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") MHTMS.sidebar.close();
+    });
+    document.addEventListener("click", function (event) {
+      if (event.target.closest("[data-sidebar-close]")) {
+        event.preventDefault();
+        MHTMS.sidebar.close();
+      } else if (event.target.closest("[data-sidebar-open]")) {
+        event.preventDefault();
+        MHTMS.sidebar.open();
+      }
+    });
+  })();
+  </script>
   {% endif %}
 
   <div class="fixed bottom-4 right-4 z-50 space-y-2" aria-live="polite">

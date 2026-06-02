@@ -125,6 +125,29 @@ body.htmx-request.htmx-settled #htmx-global-indicator {
   background: linear-gradient(180deg, #115e59 0%, #0f766e 45%, #134e4a 100%);
 }
 
+/* Mobile drawer — plain CSS (no Alpine) so it works under production CSP */
+.mobile-sidebar-overlay {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.mobile-sidebar-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.mobile-sidebar-panel {
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+}
+
+.mobile-sidebar-overlay.is-open .mobile-sidebar-panel {
+  transform: translateX(0);
+}
+
 .nav-link {
   display: flex;
   align-items: center;
