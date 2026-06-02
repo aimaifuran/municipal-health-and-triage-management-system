@@ -1,7 +1,6 @@
 import pytest
 from rest_framework import status
 
-from accounts.models import User, UserRole
 from patients.models import Patient
 
 

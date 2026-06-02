@@ -188,12 +188,19 @@ class ProfilePasswordForm(PasswordChangeForm):
             self.fields[name].widget.attrs["class"] = "form-input"
 
 
+_PICTURE_INPUT_CLASS = (
+    "block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 "
+    "file:rounded-lg file:border-0 file:text-sm file:font-semibold "
+    "file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+)
+
+
 class ProfilePictureForm(forms.Form):
     picture = forms.ImageField(
         required=True,
         widget=forms.ClearableFileInput(
             attrs={
-                "class": "block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100",
+                "class": _PICTURE_INPUT_CLASS,
                 "accept": "image/jpeg,image/png,image/webp",
             }
         ),

@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from consultations.models import Consultation
 from consultations.services import ConsultationService
-from triage.models import TriageRecord
 from triage.services import TriageService
 
 

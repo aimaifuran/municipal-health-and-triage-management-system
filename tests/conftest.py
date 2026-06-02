@@ -2,11 +2,11 @@ import os
 
 os.environ.setdefault("USE_SQLITE_DEV", "1")
 
-import pytest
-from rest_framework.test import APIClient
+import pytest  # noqa: E402
+from rest_framework.test import APIClient  # noqa: E402
 
-from accounts.models import Clinic, DoctorPatientAssignment, User, UserRole
-from patients.models import Patient
+from accounts.models import Clinic, DoctorPatientAssignment, User, UserRole  # noqa: E402
+from patients.models import Patient  # noqa: E402
 
 
 @pytest.fixture

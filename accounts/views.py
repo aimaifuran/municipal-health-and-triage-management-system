@@ -166,7 +166,8 @@ class ProfileView(LoginRequiredMixin, TemplateView):
                 else:
                     messages.error(
                         request,
-                        "Could not upload profile picture. Check Cloudinary settings and try again.",
+                        "Could not upload profile picture. "
+                        "Check Cloudinary settings and try again.",
                     )
         else:
             for error in form.errors.values():

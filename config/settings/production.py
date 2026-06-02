@@ -10,9 +10,9 @@ DEBUG = False
 
 database_url = config("DATABASE_URL", default="")  # noqa: F405
 if database_url:
-    DATABASES["default"] = dj_database_url.parse(
+    DATABASES["default"] = dj_database_url.parse(  # noqa: F405
         database_url, conn_max_age=600, ssl_require=True
-    )  # noqa: F405
+    )
 
 SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)  # noqa: F405
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -27,7 +27,8 @@ CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())  #
 
 CONTENT_SECURITY_POLICY = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; "
+    "script-src 'self' 'unsafe-inline' https://unpkg.com "
+    "https://cdn.tailwindcss.com https://cdn.jsdelivr.net; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' https://fonts.gstatic.com; "
     "img-src 'self' data: https://res.cloudinary.com; "

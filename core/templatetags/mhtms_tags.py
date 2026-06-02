@@ -17,7 +17,8 @@ def severity_badge(level: str) -> str:
     classes, extra = SEVERITY_STYLES.get(level.lower(), ("bg-gray-100 text-gray-800", ""))
     label = level.replace("_", " ").title()
     return mark_safe(
-        f'<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border {classes} {extra}">{label}</span>'
+        f'<span class="inline-flex items-center px-2.5 py-0.5 rounded-full '
+        f'text-xs font-medium border {classes} {extra}">{label}</span>'
     )
 
 
@@ -36,8 +37,10 @@ def emergency_indicator(is_critical: bool) -> str:
         return ""
     return mark_safe(
         '<span class="relative flex h-3 w-3" aria-label="Emergency">'
-        '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>'
-        '<span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>'
+        '<span class="animate-ping absolute inline-flex h-full w-full '
+        'rounded-full bg-red-400 opacity-75"></span>'
+        '<span class="relative inline-flex rounded-full h-3 w-3 bg-red-500">'
+        "</span></span>"
     )
 
 

@@ -7,8 +7,6 @@ from django.test import override_settings
 from django.urls import reverse
 from PIL import Image
 
-from accounts.models import User
-
 TEST_STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},

@@ -360,7 +360,10 @@ class ClinicalTriageEngine:
             conditions.append("Potentially life-threatening presentation")
 
         reasoning_parts = [
-            f"Triage tier {tier.value} based on vitals, symptoms, and emergency medicine principles.",
+            (
+                f"Triage tier {tier.value} based on vitals, symptoms, "
+                "and emergency medicine principles."
+            ),
         ]
         if findings:
             reasoning_parts.append("Key findings: " + "; ".join(findings[:5]) + ".")

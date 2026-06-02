@@ -6,7 +6,6 @@ import secrets
 from typing import TYPE_CHECKING
 
 from django.db import transaction
-from django.utils import timezone
 
 from auditlogs.models import AuditAction
 from auditlogs.services import AuditService

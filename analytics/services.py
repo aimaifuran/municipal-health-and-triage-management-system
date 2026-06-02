@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from django.db.models import Count, Q
+from django.db.models import Count
 
 from accounts.models import Clinic
 from consultations.models import Consultation

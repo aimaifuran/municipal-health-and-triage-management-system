@@ -12,7 +12,6 @@ from django.utils import timezone
 from accounts.models import Clinic, DoctorPatientAssignment, User, UserRole
 from consultations.models import Consultation
 from patients.models import Gender, Patient
-from patients.services import PatientService
 from triage.models import SeverityLevel, TriageRecord, TriageStatus
 from triage.services import PriorityCalculator
 
@@ -677,7 +676,8 @@ class Command(BaseCommand):
             self.stdout.write(f"    • {email}")
         self.stdout.write("\n  Re-seed anytime: python manage.py seed_demo --reset")
         self.stdout.write(
-            "  Nurse login (Carigara): nurse@mhtms.gov.ph — queue shows Critical/Moderate/Stable mix"
+            "  Nurse login (Carigara): nurse@mhtms.gov.ph — "
+            "queue shows Critical/Moderate/Stable mix"
         )
         self.stdout.write(
             "  Awaiting triage: PAT-SAMPLE-021, PAT-SAMPLE-022 (register vitals in dashboard)\n"
