@@ -58,9 +58,7 @@ class TestPublicMaskedAPI:
 class TestHealthStatsMaskingTwist:
     """Same report shape — clinical JWT unmasked vs API consumer / public masked."""
 
-    def test_doctor_gets_unmasked_health_stats(
-        self, api_client, doctor, assigned_patient, nurse
-    ):
+    def test_doctor_gets_unmasked_health_stats(self, api_client, doctor, assigned_patient, nurse):
         TriageService.create_triage(
             patient=assigned_patient,
             nurse=nurse,

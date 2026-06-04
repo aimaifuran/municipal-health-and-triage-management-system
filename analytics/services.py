@@ -128,11 +128,7 @@ class AnalyticsService:
         if not triage:
             return None
         patient = triage.patient
-        consultation = (
-            Consultation.objects.filter(patient=patient)
-            .order_by("-created_at")
-            .first()
-        )
+        consultation = Consultation.objects.filter(patient=patient).order_by("-created_at").first()
         if consultation and consultation.diagnosis:
             diagnosis = consultation.diagnosis
         else:
