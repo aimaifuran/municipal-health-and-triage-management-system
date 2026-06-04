@@ -195,7 +195,7 @@ class ConsultationService:
             AuditService.log(
                 action=AuditAction.BULK_DISCHARGE,
                 object_type="Consultation",
-                object_id=",".join(results["success"][:10]),
+                object_id=str(results["success"][0]) if len(results["success"]) == 1 else "",
                 user=user,
                 request=request,
                 details={
@@ -268,7 +268,7 @@ class ConsultationService:
             AuditService.log(
                 action=AuditAction.UPDATE,
                 object_type="Consultation",
-                object_id=",".join(results["success"][:10]),
+                object_id=str(results["success"][0]) if len(results["success"]) == 1 else "",
                 user=user,
                 request=request,
                 details={

@@ -40,11 +40,16 @@ class AuditService:
         request: HttpRequest | None = None,
         details: dict[str, Any] | None = None,
     ) -> AuditLog:
+        object_id_str = str(object_id) if object_id else ""
+        max_length = AuditLog._meta.get_field("object_id").max_length or len(object_id_str)
+        if len(object_id_str) > max_length:
+            object_id_str = object_id_str[: max_length - 3] + "..." if max_length > 3 else object_id_str[:max_length]
+
         entry = AuditLog.objects.create(
             user=user,
             action=action,
             object_type=object_type,
-            object_id=str(object_id) if object_id else "",
+            object_id=object_id_str,
             details=details or {},
             ip_address=_get_client_ip(request),
             user_agent=_get_user_agent(request),

@@ -1,5 +1,6 @@
 import pytest
 
+from auditlogs.models import AuditLog
 from consultations.models import Consultation
 from consultations.services import ConsultationService
 
@@ -42,6 +43,7 @@ class TestBulkDischarge:
         c2.refresh_from_db()
         assert c1.discharged is True
         assert c2.discharged is True
+        assert AuditLog.objects.filter(action="bulk_discharge").exists()
 
     def test_bulk_discharge_partial_failure(self, doctor, assigned_patient):
         import uuid
