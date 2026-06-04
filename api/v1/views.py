@@ -7,9 +7,14 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_
 from rest_framework import generics, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
+
+
+class PublicApiRateThrottle(AnonRateThrottle):
+    scope = "public"
 
 from accounts.models import UserRole
 from analytics.services import AnalyticsService
@@ -331,6 +336,7 @@ class PublicMaskedStatsView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [PublicApiRateThrottle]
 
     def get(self, request):
         region = request.query_params.get("region", "")

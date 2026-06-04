@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from rest_framework.exceptions import Throttled
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -11,11 +12,24 @@ from rest_framework.views import exception_handler
 def custom_exception_handler(exc: Exception, context: dict[str, Any]) -> Response | None:
     response = exception_handler(exc, context)
     if response is not None:
-        response.data = {
-            "success": False,
-            "error": response.data,
-            "message": _human_message(response.status_code, response.data),
-        }
+        if isinstance(exc, Throttled):
+            wait = getattr(exc, "wait", None)
+            details = (
+                f"Too many request. Expected available in {int(wait)} seconds."
+                if wait is not None
+                else "Too many request"
+            )
+            response.data = {
+                "success": False,
+                "error": {"detail": details},
+                "message": details,
+            }
+        else:
+            response.data = {
+                "success": False,
+                "error": response.data,
+                "message": _human_message(response.status_code, response.data),
+            }
     return response
 
 

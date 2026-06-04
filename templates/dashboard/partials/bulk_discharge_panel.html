@@ -47,7 +47,7 @@
       </div>
       {% include "dashboard/partials/pagination.html" with page_obj=readmit_page page_param="readmit_page" pagination_post_url=discharge_panel_partial_url filter_form_id=filter_form_id hx_target="#bulk-discharge-panel" hx_swap="outerHTML" %}
       <button
-        type="button"
+        type="submit"
         id="bulk-readmit-submit"
         data-action="readmit-open"
         class="bulk-readmit-btn mt-3 w-full bg-slate-700 text-white py-2.5 rounded-lg hover:bg-slate-800 transition flex items-center justify-center gap-2 min-h-[44px]"
@@ -101,7 +101,7 @@
       </div>
       {% include "dashboard/partials/pagination.html" with page_obj=discharge_page page_param="discharge_page" pagination_post_url=discharge_panel_partial_url filter_form_id=filter_form_id hx_target="#bulk-discharge-panel" hx_swap="outerHTML" %}
       <button
-        type="button"
+        type="submit"
         id="bulk-discharge-submit"
         data-action="discharge-open"
         class="bulk-discharge-btn mt-4 w-full bg-teal-600 text-white py-2.5 rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2 min-h-[44px]"

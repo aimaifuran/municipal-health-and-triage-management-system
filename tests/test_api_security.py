@@ -53,6 +53,21 @@ class TestPublicMaskedAPI:
         assert data["sample_cases"] == []
         assert "first_name" not in data
 
+    def test_public_api_rate_limits_anon_requests(self, api_client):
+        from django.core.cache import caches
+
+        caches["default"].clear()
+
+        for _ in range(5):
+            response = api_client.get("/api/v1/public/health-stats/?region=Region VIII")
+            assert response.status_code == status.HTTP_200_OK
+
+        response = api_client.get("/api/v1/public/health-stats/?region=Region VIII")
+        assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+        body = response.json()
+        assert body["error"]["detail"].startswith("Too many request. Expected available in")
+        assert body["message"].startswith("Too many request. Expected available in")
+
 
 @pytest.mark.django_db
 class TestHealthStatsMaskingTwist:
