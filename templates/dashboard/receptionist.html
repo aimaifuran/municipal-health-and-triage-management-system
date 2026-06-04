@@ -3,7 +3,7 @@
 {% block content %}
 <div class="bg-white rounded-xl border shadow-sm p-4 md:p-6">
   <h2 class="text-lg font-semibold mb-4">Patient Registration &amp; Queue</h2>
-  <p class="text-slate-600 text-sm mb-2">Register patient demographics and manage appointments. Consultation data is restricted.</p>
+  <p class="text-slate-600 text-sm mb-2">View patient demographic information for family inquiries only. Access to consultation records, medical information, and other patient management functions is restricted.</p>
   {% include "dashboard/partials/table_filters.html" with table_filters=patients_table_filters filter_form_id="patients-filters-form" show_severity_filter=False search_placeholder="Patient ID or name" hx_post_url=patients_partial_url hx_target="#patients-table-container" reset_page_param="patients_page" %}
   <div id="patients-table-container">
     {% include "dashboard/partials/receptionist_patients_table.html" %}
