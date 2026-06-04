@@ -43,7 +43,11 @@ class AuditService:
         object_id_str = str(object_id) if object_id else ""
         max_length = AuditLog._meta.get_field("object_id").max_length or len(object_id_str)
         if len(object_id_str) > max_length:
-            object_id_str = object_id_str[: max_length - 3] + "..." if max_length > 3 else object_id_str[:max_length]
+            object_id_str = (
+                object_id_str[: max_length - 3] + "..."
+                if max_length > 3
+                else object_id_str[:max_length]
+            )
 
         entry = AuditLog.objects.create(
             user=user,
