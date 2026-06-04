@@ -12,10 +12,6 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
-class PublicApiRateThrottle(AnonRateThrottle):
-    scope = "public"
-
 from accounts.models import UserRole
 from analytics.services import AnalyticsService
 from api.v1.serializers import (
@@ -47,6 +43,10 @@ from security.permissions import (
 )
 from triage.models import TriageRecord
 from triage.services import TriageService
+
+
+class PublicApiRateThrottle(AnonRateThrottle):
+    scope = "public"
 
 
 @extend_schema(tags=["Authentication"])
