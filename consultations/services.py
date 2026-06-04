@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import TYPE_CHECKING
 
 from django.db import transaction
@@ -21,6 +22,30 @@ if TYPE_CHECKING:
 
 
 class ConsultationService:
+    @staticmethod
+    def _normalize_bulk_ids(consultation_ids: list) -> tuple[list[str], list[str]]:
+        normalized_ids: list[str] = []
+        invalid_ids: list[str] = []
+        seen: set[str] = set()
+
+        for raw_id in consultation_ids:
+            if not raw_id:
+                continue
+            for value in str(raw_id).split(","):
+                candidate = value.strip()
+                if not candidate:
+                    continue
+                try:
+                    normalized = str(uuid.UUID(candidate))
+                except ValueError:
+                    invalid_ids.append(candidate)
+                    continue
+                if normalized not in seen:
+                    seen.add(normalized)
+                    normalized_ids.append(normalized)
+
+        return normalized_ids, invalid_ids
+
     @staticmethod
     def get_open_consultation(patient: Patient, doctor: User) -> Consultation | None:
         return (
@@ -160,26 +185,35 @@ class ConsultationService:
         request: HttpRequest | None = None,
     ) -> dict:
         results = {"success": [], "failed": []}
-        normalized_ids = [str(cid).strip() for cid in consultation_ids if cid and str(cid).strip()]
-        if not normalized_ids:
+        normalized_ids, invalid_ids = ConsultationService._normalize_bulk_ids(consultation_ids)
+        if not normalized_ids and not invalid_ids:
             return results
 
-        eligible = AccessControlService.filter_consultations_for_user(
-            user,
-            Consultation.objects.filter(
-                id__in=normalized_ids,
-                admitted=True,
-                discharged=False,
-            ),
-        )
         found_ids: set[str] = set()
-        for consultation in eligible:
-            found_ids.add(str(consultation.id))
-            consultation.discharged = True
-            consultation.discharged_at = timezone.now()
-            consultation.save(update_fields=["discharged", "discharged_at", "updated_at"])
-            ConsultationService._close_active_triage(consultation.patient)
-            results["success"].append(str(consultation.id))
+        if normalized_ids:
+            eligible = AccessControlService.filter_consultations_for_user(
+                user,
+                Consultation.objects.filter(
+                    id__in=normalized_ids,
+                    admitted=True,
+                    discharged=False,
+                ),
+            )
+            for consultation in eligible:
+                found_ids.add(str(consultation.id))
+                consultation.discharged = True
+                consultation.discharged_at = timezone.now()
+                consultation.save(update_fields=["discharged", "discharged_at", "updated_at"])
+                ConsultationService._close_active_triage(consultation.patient)
+                results["success"].append(str(consultation.id))
+
+        for cid in invalid_ids:
+            results["failed"].append(
+                {
+                    "id": cid,
+                    "reason": "Invalid consultation ID - refresh the page and try again.",
+                }
+            )
 
         for cid in normalized_ids:
             if cid in found_ids or cid in results["success"]:
@@ -233,26 +267,35 @@ class ConsultationService:
     ) -> dict:
         """Undo discharge — return patients to the active discharge list."""
         results = {"success": [], "failed": []}
-        normalized_ids = [str(cid).strip() for cid in consultation_ids if cid and str(cid).strip()]
-        if not normalized_ids:
+        normalized_ids, invalid_ids = ConsultationService._normalize_bulk_ids(consultation_ids)
+        if not normalized_ids and not invalid_ids:
             return results
 
-        eligible = AccessControlService.filter_consultations_for_user(
-            user,
-            Consultation.objects.filter(
-                id__in=normalized_ids,
-                admitted=True,
-                discharged=True,
-            ),
-        )
         found_ids: set[str] = set()
-        for consultation in eligible:
-            found_ids.add(str(consultation.id))
-            consultation.discharged = False
-            consultation.discharged_at = None
-            consultation.save(update_fields=["discharged", "discharged_at", "updated_at"])
-            ConsultationService._reopen_triage(consultation.patient)
-            results["success"].append(str(consultation.id))
+        if normalized_ids:
+            eligible = AccessControlService.filter_consultations_for_user(
+                user,
+                Consultation.objects.filter(
+                    id__in=normalized_ids,
+                    admitted=True,
+                    discharged=True,
+                ),
+            )
+            for consultation in eligible:
+                found_ids.add(str(consultation.id))
+                consultation.discharged = False
+                consultation.discharged_at = None
+                consultation.save(update_fields=["discharged", "discharged_at", "updated_at"])
+                ConsultationService._reopen_triage(consultation.patient)
+                results["success"].append(str(consultation.id))
+
+        for cid in invalid_ids:
+            results["failed"].append(
+                {
+                    "id": cid,
+                    "reason": "Invalid consultation ID - refresh the page and try again.",
+                }
+            )
 
         for cid in normalized_ids:
             if cid in found_ids or cid in results["success"]:
