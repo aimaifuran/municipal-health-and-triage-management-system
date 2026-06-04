@@ -9,18 +9,18 @@
   hx-include="this"
   hx-indicator="#triage-form-indicator"
 >
-  <option value="">— Select a patient —</option>
+  <option value="" {% if not selected_patient_id %}selected{% endif %}>— Select a patient —</option>
   {% if awaiting_patients %}
   <optgroup label="Awaiting triage">
     {% for p in awaiting_patients %}
-    <option value="{{ p.id }}">{{ p.patient_number }} — {{ p.full_name }}</option>
+    <option value="{{ p.id }}" {% if selected_patient_id == p.id|stringformat:"s" %}selected{% endif %}>{{ p.patient_number }} — {{ p.full_name }}</option>
     {% endfor %}
   </optgroup>
   {% endif %}
   {% if queue %}
   <optgroup label="In queue (update vitals)">
     {% for item in queue %}
-    <option value="{{ item.patient.id }}">{{ item.patient.patient_number }} — {{ item.patient.full_name }}</option>
+    <option value="{{ item.patient.id }}" {% if selected_patient_id == item.patient.id|stringformat:"s" %}selected{% endif %}>{{ item.patient.patient_number }} — {{ item.patient.full_name }}</option>
     {% endfor %}
   </optgroup>
   {% endif %}

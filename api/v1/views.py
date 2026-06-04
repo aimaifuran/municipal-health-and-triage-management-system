@@ -21,6 +21,7 @@ from api.v1.serializers import (
     PatientCreateSerializer,
     PatientSerializer,
     PublicHealthStatsSerializer,
+    RegionalHealthStatsSerializer,
     TriageRecordSerializer,
     UserProfileSerializer,
 )
@@ -304,6 +305,24 @@ class RegionalStatisticsView(APIView):
     def get(self, request):
         region = request.query_params.get("region", "")
         return Response(AnalyticsService.regional_statistics(region))
+
+
+@extend_schema(tags=["Analytics"], responses=RegionalHealthStatsSerializer)
+class RegionalHealthStatsView(APIView):
+    """
+    Authenticated regional report — masked vs unmasked by role.
+
+    - Doctor / Nurse / Admin / Receptionist → clinical_full (real PHI sample).
+    - API Consumer → public_masked (same as /public/health-stats/).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        region = request.query_params.get("region", "")
+        masked = request.user.role == UserRole.API_CONSUMER
+        data = AnalyticsService.regional_health_report(region, masked=masked)
+        return Response(data)
 
 
 @extend_schema(tags=["Public"], responses=PublicHealthStatsSerializer)

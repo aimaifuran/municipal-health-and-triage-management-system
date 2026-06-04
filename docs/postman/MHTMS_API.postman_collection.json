@@ -1,47 +1,638 @@
 {
   "info": {
+    "_postman_id": "mhtms-api-v1-collection",
     "name": "MHTMS API v1",
-    "description": "Municipal Health & Triage Management System",
+    "description": "Municipal Health & Triage Management System — REST API v1.\n\n## Setup\n1. Import this collection and `MHTMS_API.postman_environment.json`.\n2. Select the environment and set `base_url` (local: http://127.0.0.1:8000).\n3. Run **Auth → Login (Doctor)** — tokens are saved automatically.\n4. Use **Patients → List Patients** and copy a UUID into `patient_id` for detail requests.\n\n## Docs\n- Markdown: `docs/API_DOCUMENTATION.md`\n- Swagger UI: `{{base_url}}/api/docs/`\n\n## Demo accounts (after `seed_demo`)\n| Email | Role | Password |\n|-------|------|----------|\n| doctor@mhtms.gov.ph | Doctor | DemoPass123! |\n| nurse@mhtms.gov.ph | Nurse | DemoPass123! |\n| reception@mhtms.gov.ph | Receptionist | DemoPass123! |\n| admin@mhtms.gov.ph | Super Admin | DemoPass123! |",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('base_url') && pm.environment.get('base_url')) {",
+          "    pm.collectionVariables.set('base_url', pm.environment.get('base_url'));",
+          "}"
+        ]
+      }
+    }
+  ],
   "variable": [
-    {"key": "base_url", "value": "https://your-app.onrender.com"},
-    {"key": "access_token", "value": ""}
+    {"key": "base_url", "value": "http://127.0.0.1:8000"},
+    {"key": "access_token", "value": ""},
+    {"key": "refresh_token", "value": ""},
+    {"key": "patient_id", "value": ""},
+    {"key": "consultation_id", "value": ""},
+    {"key": "triage_id", "value": ""}
   ],
   "item": [
     {
       "name": "Auth",
+      "description": "JWT authentication (email + password). Access token lifetime is configured in Django settings; use refresh when expired.",
       "item": [
         {
-          "name": "Login",
+          "name": "Login (Doctor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access);",
+                  "    pm.collectionVariables.set('refresh_token', data.refresh);",
+                  "    if (pm.environment.name) {",
+                  "        pm.environment.set('access_token', data.access);",
+                  "        pm.environment.set('refresh_token', data.refresh);",
+                  "    }",
+                  "    console.log('Tokens saved to collection/environment variables.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
+            "auth": {"type": "noauth"},
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
-            "url": "{{base_url}}/api/v1/auth/login/",
             "body": {
               "mode": "raw",
-              "raw": "{\"email\": \"doctor@mhtms.gov.ph\", \"password\": \"DemoPass123!\"}"
-            }
+              "raw": "{\n  \"email\": \"{{doctor_email}}\",\n  \"password\": \"{{doctor_password}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login/",
+            "description": "Obtain JWT access + refresh tokens. Uses `doctor_email` / `doctor_password` from environment."
           }
         },
         {
-          "name": "Profile",
+          "name": "Login (Nurse)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access);",
+                  "    pm.collectionVariables.set('refresh_token', data.refresh);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nurse@mhtms.gov.ph\",\n  \"password\": \"DemoPass123!\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login/"
+          }
+        },
+        {
+          "name": "Login (API Consumer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access);",
+                  "    pm.collectionVariables.set('refresh_token', data.refresh);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"api@mhtms.gov.ph\",\n  \"password\": \"DemoPass123!\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login/",
+            "description": "API Consumer role — health-stats returns masked PHI only."
+          }
+        },
+        {
+          "name": "Login (Receptionist)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access);",
+                  "    pm.collectionVariables.set('refresh_token', data.refresh);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"reception@mhtms.gov.ph\",\n  \"password\": \"DemoPass123!\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login/"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', data.access);",
+                  "    if (data.refresh) pm.collectionVariables.set('refresh_token', data.refresh);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/refresh/",
+            "description": "Rotate access token. Old refresh may be blacklisted if ROTATE_REFRESH_TOKENS is enabled."
+          }
+        },
+        {
+          "name": "Profile (Me)",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{access_token}}"}],
-            "url": "{{base_url}}/api/v1/auth/profile/"
+            "url": "{{base_url}}/api/v1/auth/profile/",
+            "description": "Current user profile (role, clinic, email)."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/logout/",
+            "description": "Blacklist refresh token and audit logout."
           }
         }
       ]
     },
     {
-      "name": "Public",
+      "name": "Patients",
+      "description": "Patient CRUD with Anti-IDOR scoping. Doctors only see assigned patients; nurses/reception see clinic patients.",
+      "item": [
+        {
+          "name": "List Patients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    const list = Array.isArray(data) ? data : (data.results || []);",
+                  "    if (list.length && list[0].id) {",
+                  "        pm.collectionVariables.set('patient_id', list[0].id);",
+                  "        console.log('patient_id set to first result:', list[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/patients/?search=&ordering=-created_at",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "patients", ""],
+              "query": [
+                {"key": "search", "value": "", "description": "Name or patient number"},
+                {"key": "ordering", "value": "-created_at"},
+                {"key": "gender", "value": "male", "disabled": true},
+                {"key": "page", "value": "1", "disabled": true}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 && pm.response.json().id) {",
+                  "    pm.collectionVariables.set('patient_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Maria\",\n  \"middle_name\": \"\",\n  \"last_name\": \"Santos\",\n  \"birth_date\": \"1992-06-15\",\n  \"gender\": \"female\",\n  \"address\": \"Carigara, Leyte\",\n  \"contact_number\": \"+639171234567\",\n  \"emergency_contact\": \"Juan Santos\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/patients/",
+            "description": "Receptionist, Nurse, or Super Admin only."
+          }
+        },
+        {
+          "name": "Get Patient by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/patients/{{patient_id}}/",
+            "description": "Returns 403/404 if user cannot access this UUID (Anti-IDOR demo)."
+          }
+        },
+        {
+          "name": "Update Patient (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_number\": \"+639189999999\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/patients/{{patient_id}}/"
+          }
+        },
+        {
+          "name": "Archive Patient (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/v1/patients/{{patient_id}}/",
+            "description": "Soft-archive via PatientService."
+          }
+        },
+        {
+          "name": "Patient Queue (Triage Waiting)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/patients/queue/",
+            "description": "Clinical staff only — patients with active triage in waiting/escalated/in_progress."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Triage",
+      "description": "Nurse / Super Admin. Creates triage with auto severity scoring.",
+      "item": [
+        {
+          "name": "List Triage Records",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const list = Array.isArray(pm.response.json()) ? pm.response.json() : (pm.response.json().results || []);",
+                  "    if (list[0] && list[0].id) pm.collectionVariables.set('triage_id', list[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/triage/?severity_level=critical",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "triage", ""],
+              "query": [
+                {"key": "severity_level", "value": "critical", "disabled": true},
+                {"key": "triage_status", "value": "waiting", "disabled": true}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Triage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 && pm.response.json().id) {",
+                  "    pm.collectionVariables.set('triage_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient\": \"{{patient_id}}\",\n  \"blood_pressure\": \"140/90\",\n  \"heart_rate\": 88,\n  \"respiratory_rate\": 18,\n  \"oxygen_saturation\": \"96\",\n  \"body_temperature\": \"37.8\",\n  \"symptoms\": \"Fever, cough\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/triage/",
+            "description": "Set `patient_id` first. Nurse role required."
+          }
+        },
+        {
+          "name": "Get Triage Record",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/triage/{{triage_id}}/"
+          }
+        },
+        {
+          "name": "Update Vitals (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blood_pressure\": \"130/85\",\n  \"symptoms\": \"Fever improving\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/triage/{{triage_id}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultations",
+      "description": "Doctor only (receptionist denied). Includes admit, discharge, bulk discharge.",
+      "item": [
+        {
+          "name": "List Consultations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const list = Array.isArray(pm.response.json()) ? pm.response.json() : (pm.response.json().results || []);",
+                  "    if (list[0] && list[0].id) pm.collectionVariables.set('consultation_id', list[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/consultations/"
+          }
+        },
+        {
+          "name": "Create Consultation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 && pm.response.json().id) {",
+                  "    pm.collectionVariables.set('consultation_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient\": \"{{patient_id}}\",\n  \"diagnosis\": \"Acute viral URI\",\n  \"treatment\": \"Rest, fluids, paracetamol PRN\",\n  \"prescription\": \"Paracetamol 500mg PO q6h x 3 days\",\n  \"consultation_notes\": \"Return if worsening\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/consultations/"
+          }
+        },
+        {
+          "name": "Get Consultation",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/consultations/{{consultation_id}}/"
+          }
+        },
+        {
+          "name": "Admit Patient",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/v1/consultations/{{consultation_id}}/admit/"
+          }
+        },
+        {
+          "name": "Discharge Patient",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/v1/consultations/{{consultation_id}}/discharge/"
+          }
+        },
+        {
+          "name": "Bulk Discharge",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultation_ids\": [\n    \"{{consultation_id}}\"\n  ]\n}"
+            },
+            "url": "{{base_url}}/api/v1/consultations/bulk-discharge/",
+            "description": "Up to 100 UUIDs; per-ID permission checks."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "description": "Authenticated clinic stats; regional stats are public aggregate data.",
+      "item": [
+        {
+          "name": "Clinic Statistics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/clinic/?clinic_id=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "clinic", ""],
+              "query": [
+                {
+                  "key": "clinic_id",
+                  "value": "",
+                  "description": "Optional; defaults to user's clinic"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Health Stats (Unmasked — Doctor)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/health-stats/?region=Region VIII",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "health-stats", ""],
+              "query": [{"key": "region", "value": "Region VIII"}]
+            },
+            "description": "Requires Doctor/Nurse/Admin JWT. data_classification=clinical_full, real patient_name and sample_cases."
+          }
+        },
+        {
+          "name": "Health Stats (Masked — API Consumer)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/health-stats/?region=Region VIII",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "health-stats", ""],
+              "query": [{"key": "region", "value": "Region VIII"}]
+            },
+            "description": "Run Login (API Consumer) first. Same URL — patient_name becomes HIPAA Restricted."
+          }
+        },
+        {
+          "name": "Regional Statistics",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/regional/?region=Region VIII",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "regional", ""],
+              "query": [{"key": "region", "value": "Region VIII"}]
+            },
+            "description": "No auth required — aggregate counts only."
+          }
+        },
+        {
+          "name": "Severity Distribution",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/analytics/severity/"
+          }
+        },
+        {
+          "name": "Patient Trends",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/analytics/trends/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public (Masked)",
+      "description": "No authentication. PHI fields are replaced with \"HIPAA Restricted\".",
       "item": [
         {
           "name": "Masked Health Stats",
           "request": {
+            "auth": {"type": "noauth"},
             "method": "GET",
-            "url": "{{base_url}}/api/v1/public/health-stats/?region=Region%20VII"
+            "url": {
+              "raw": "{{base_url}}/api/v1/public/health-stats/?region=Region VIII",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "public", "health-stats", ""],
+              "query": [{"key": "region", "value": "Region VIII"}]
+            },
+            "description": "Defense demo: compare with authenticated analytics — no PHI exposed."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Defense Demos",
+      "description": "Suggested flow for capstone presentation (Member 2 — API & IAM).",
+      "item": [
+        {
+          "name": "1 — Login Doctor",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"doctor@mhtms.gov.ph\", \"password\": \"DemoPass123!\"}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login/"
+          }
+        },
+        {
+          "name": "2 — List Patients (Mine)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/patients/"
+          }
+        },
+        {
+          "name": "3 — IDOR Test (Other Clinic Patient UUID)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/patients/00000000-0000-0000-0000-000000000001/",
+            "description": "Replace UUID with one from another doctor's patient (seed data). Expect 403 or 404."
+          }
+        },
+        {
+          "name": "4 — Health Stats Unmasked (Doctor JWT)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/analytics/health-stats/?region=Region+VIII"
+          }
+        },
+        {
+          "name": "5 — Health Stats Masked (API Consumer JWT)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/analytics/health-stats/?region=Region+VIII",
+            "description": "Login as api@mhtms.gov.ph first."
+          }
+        },
+        {
+          "name": "6 — Public Masked Stats (No Auth)",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/public/health-stats/?region=Region+VIII"
           }
         }
       ]

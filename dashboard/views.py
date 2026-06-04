@@ -221,6 +221,22 @@ def _awaiting_table_context(request) -> dict:
     return ctx
 
 
+NURSE_VITALS_PATIENT_SESSION_KEY = "nurse_vitals_patient_id"
+
+
+def _nurse_selected_patient_id(request) -> str | None:
+    """Preserve vitals picker selection across HTMX polls (every 10s queue refresh)."""
+    raw = request.GET.get("patient") or request.session.get(NURSE_VITALS_PATIENT_SESSION_KEY)
+    return str(raw) if raw else None
+
+
+def _set_nurse_vitals_patient(request, patient: Patient | None) -> None:
+    if patient is None:
+        request.session.pop(NURSE_VITALS_PATIENT_SESSION_KEY, None)
+    else:
+        request.session[NURSE_VITALS_PATIENT_SESSION_KEY] = str(patient.pk)
+
+
 def _nurse_patient_select_context(request) -> dict:
     user = request.user
     queue_qs = _active_queue_queryset(user, request)[:100]
@@ -229,6 +245,7 @@ def _nurse_patient_select_context(request) -> dict:
         "queue": list(queue_qs),
         "awaiting_patients": list(awaiting_qs),
         "patient_select_partial_url": reverse("dashboard:nurse-patient-select-partial"),
+        "selected_patient_id": _nurse_selected_patient_id(request),
     }
 
 
@@ -1114,18 +1131,28 @@ class NurseTriageFormPartialView(NurseRequiredMixin, View):
     """HTMX: load vitals form for a selected patient (new or update)."""
 
     def get(self, request):
-        patient = get_object_or_404(Patient, pk=request.GET.get("patient"))
+        patient_id = (request.GET.get("patient") or "").strip()
+        if not patient_id:
+            _set_nurse_vitals_patient(request, None)
+            return render(
+                request,
+                "dashboard/partials/triage_workspace_empty.html",
+            )
+        patient = get_object_or_404(Patient, pk=patient_id)
         AccessControlService.assert_patient_access(request.user, patient, request)
+        _set_nurse_vitals_patient(request, patient)
         record = TriageRecord.objects.filter(patient=patient, is_active=True).first()
         form = TriageVitalsForm(initial=_triage_form_initial(record))
+        ctx = {
+            "form": form,
+            "patient": patient,
+            "triage_record": record,
+        }
+        ctx.update(_nurse_patient_select_context(request))
         return render(
             request,
-            "dashboard/partials/triage_form.html",
-            {
-                "form": form,
-                "patient": patient,
-                "triage_record": record,
-            },
+            "dashboard/partials/nurse_triage_form_with_picker.html",
+            ctx,
         )
 
 
@@ -1138,14 +1165,16 @@ class NurseTriageSubmitView(NurseRequiredMixin, View):
         record = TriageRecord.objects.filter(patient=patient, is_active=True).first()
         form = TriageVitalsForm(request.POST)
         if not form.is_valid():
+            ctx = {
+                "form": form,
+                "patient": patient,
+                "triage_record": record,
+            }
+            ctx.update(_nurse_patient_select_context(request))
             return render(
                 request,
-                "dashboard/partials/triage_form.html",
-                {
-                    "form": form,
-                    "patient": patient,
-                    "triage_record": record,
-                },
+                "dashboard/partials/nurse_triage_form_with_picker.html",
+                ctx,
                 status=400,
             )
 
@@ -1169,6 +1198,7 @@ class NurseTriageSubmitView(NurseRequiredMixin, View):
         )
 
         if request.headers.get("HX-Request"):
+            _set_nurse_vitals_patient(request, None)
             ctx = _nurse_dashboard_context(request)
             ctx["record"] = record
             return _trigger_nurse_refresh(
@@ -1216,6 +1246,7 @@ class NursePatientRegisterView(NurseRequiredMixin, View):
         )
 
         if request.headers.get("HX-Request"):
+            _set_nurse_vitals_patient(request, patient)
             ctx = _nurse_dashboard_context(request)
             ctx["new_patient"] = patient
             ctx["triage_form"] = TriageVitalsForm()

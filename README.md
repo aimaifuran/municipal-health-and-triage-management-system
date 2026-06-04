@@ -86,6 +86,7 @@ Includes **3 clinics** (Carigara, Barugo, Capoocan — Region VIII), **7 staff a
 | nurse2@mhtms.gov.ph | Nurse (Barugo) | DemoPass123! |
 | reception@mhtms.gov.ph | Receptionist | DemoPass123! |
 | reception2@mhtms.gov.ph | Receptionist (Barugo) | DemoPass123! |
+| api@mhtms.gov.ph | API Consumer (masked stats only) | DemoPass123! |
 
 ## Environment Variables
 
@@ -102,9 +103,11 @@ See [`.env.example`](.env.example) for all variables. **Never commit `.env` to v
 
 ## API Documentation
 
+- **Full guide + Postman import:** [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md)
 - Swagger UI: `/api/docs/`
 - OpenAPI schema: `/api/schema/`
 - Postman collection: [`docs/postman/MHTMS_API.postman_collection.json`](docs/postman/MHTMS_API.postman_collection.json)
+- Postman environments: [`MHTMS_API.postman_environment.json`](docs/postman/MHTMS_API.postman_environment.json) (local), [`MHTMS_API_Production.postman_environment.json`](docs/postman/MHTMS_API_Production.postman_environment.json)
 
 ### Authentication
 
@@ -129,6 +132,7 @@ Returns aggregated data only; PHI fields are `"HIPAA Restricted"`.
 
 | Guide | Description |
 |-------|-------------|
+| [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | REST API reference + Postman import guide |
 | [docs/TEAM_ROLES_AND_SECURITY.md](docs/TEAM_ROLES_AND_SECURITY.md) | Team roles, architecture diagrams, security layers, defense scripts |
 | [docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md) | Render deployment |
 | [docs/CONSULT_AI_SETUP.md](docs/CONSULT_AI_SETUP.md) | Consult AI (OpenAI) setup |
@@ -171,4 +175,4 @@ bandit -r . -x ./tests
 Proprietary — Municipal Government Use
 
  
- 
+   

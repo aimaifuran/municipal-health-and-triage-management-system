@@ -3,7 +3,9 @@ from datetime import date
 import pytest
 from rest_framework import status
 
+from accounts.models import UserRole
 from patients.models import Patient
+from triage.services import TriageService
 
 
 @pytest.mark.django_db
@@ -47,7 +49,55 @@ class TestPublicMaskedAPI:
         data = response.json()
         assert data["patient_name"] == "HIPAA Restricted"
         assert data["patient_details"] == "HIPAA Restricted"
+        assert data["data_classification"] == "public_masked"
+        assert data["sample_cases"] == []
         assert "first_name" not in data
+
+
+@pytest.mark.django_db
+class TestHealthStatsMaskingTwist:
+    """Same report shape — clinical JWT unmasked vs API consumer / public masked."""
+
+    def test_doctor_gets_unmasked_health_stats(
+        self, api_client, doctor, assigned_patient, nurse
+    ):
+        TriageService.create_triage(
+            patient=assigned_patient,
+            nurse=nurse,
+            validated_data={
+                "blood_pressure": "180/110",
+                "heart_rate": 110,
+                "respiratory_rate": 24,
+                "oxygen_saturation": "88",
+                "body_temperature": "39.0",
+                "symptoms": "Chest pain",
+            },
+        )
+        api_client.force_authenticate(user=doctor)
+        response = api_client.get("/api/v1/analytics/health-stats/?region=Region VII")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["data_classification"] == "clinical_full"
+        assert data["patient_name"] != "HIPAA Restricted"
+        assert "Juan" in data["patient_name"]
+        assert len(data["sample_cases"]) >= 1
+
+    def test_api_consumer_gets_masked_health_stats(self, api_client, db):
+        from accounts.models import User
+
+        consumer = User.objects.create_user(
+            email="api@test.gov.ph",
+            password="SecurePass123!",
+            role=UserRole.API_CONSUMER,
+            is_verified=True,
+        )
+        api_client.force_authenticate(user=consumer)
+        response = api_client.get("/api/v1/analytics/health-stats/")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["data_classification"] == "public_masked"
+        assert data["patient_name"] == "HIPAA Restricted"
+        assert data["sample_cases"] == []
 
 
 @pytest.mark.django_db

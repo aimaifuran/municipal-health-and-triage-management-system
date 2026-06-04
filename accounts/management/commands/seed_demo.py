@@ -119,6 +119,7 @@ class Command(BaseCommand):
             ("nurse2@mhtms.gov.ph", UserRole.NURSE, barugo, False, False),
             ("reception@mhtms.gov.ph", UserRole.RECEPTIONIST, carigara, False, False),
             ("reception2@mhtms.gov.ph", UserRole.RECEPTIONIST, barugo, False, False),
+            ("api@mhtms.gov.ph", UserRole.API_CONSUMER, None, False, False),
         ]
         doctors: list[User] = []
         nurses: list[User] = []

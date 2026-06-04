@@ -124,14 +124,32 @@ class MessageResponseSerializer(serializers.Serializer):
     message = serializers.CharField()
 
 
-class PublicHealthStatsSerializer(serializers.Serializer):
+class HealthReportSampleCaseSerializer(serializers.Serializer):
+    patient_name = serializers.CharField()
+    patient_details = serializers.CharField()
+    diagnosis = serializers.CharField()
+    contact_number = serializers.CharField()
+    address = serializers.CharField()
+    severity_level = serializers.CharField(required=False)
+    symptoms = serializers.CharField(required=False)
+
+
+class RegionalHealthStatsSerializer(serializers.Serializer):
+    """Same schema for masked and unmasked — values differ by role / endpoint."""
+
     region = serializers.CharField()
     clinic_count = serializers.IntegerField()
     active_cases = serializers.IntegerField()
     respiratory_cases = serializers.IntegerField()
     top_symptoms = serializers.ListField(child=serializers.CharField())
+    data_classification = serializers.CharField()
     patient_name = serializers.CharField()
     patient_details = serializers.CharField()
     diagnosis = serializers.CharField(required=False)
     contact_number = serializers.CharField(required=False)
     address = serializers.CharField(required=False)
+    sample_cases = HealthReportSampleCaseSerializer(many=True, required=False)
+
+
+class PublicHealthStatsSerializer(RegionalHealthStatsSerializer):
+    """Alias for OpenAPI / public endpoint documentation."""
